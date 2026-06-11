@@ -81,8 +81,8 @@ export default function App() {
           {/* Header Image */}
           <div className="w-full h-[240px] relative bg-gray-200 flex items-center justify-center">
             <img 
-              src="https://images.unsplash.com/photo-1548625361-b552bb7db2ff?auto=format&fit=crop&w=1000&q=80" 
-              alt="Крестный ход" 
+              src="https://images.unsplash.com/photo-1519491050282-cf00c82424b4?auto=format&fit=crop&w=1000&q=80" 
+              alt="Горящие церковные свечи" 
               className="absolute inset-0 w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-black/40" />

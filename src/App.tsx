@@ -96,7 +96,13 @@ export default function App() {
             <div className="relative mb-10">
               <select 
                 value={treba}
-                onChange={e => setTreba(e.target.value)}
+                onChange={e => {
+                  const value = e.target.value;
+                  setTreba(value);
+                  if (value === 'Панихида') {
+                    setType('upokoenie');
+                  }
+                }}
                 className="opacity-0 absolute inset-0 w-full h-full cursor-pointer z-10"
               >
                 <option value="Выберите требу" disabled>Выберите требу</option>

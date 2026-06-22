@@ -126,20 +126,24 @@ export default function App() {
               </p>
 
               <div className="flex gap-3 pt-2">
-                <button 
-                  onClick={() => setType('zdravie')} 
-                  className={`flex-1 flex justify-center items-center py-[16px] rounded-[14px] border-2 transition-all ${
-                    type === 'zdravie' 
-                      ? 'bg-[#d24c58] border-[#d24c58] text-white shadow-md font-medium' 
-                      : 'bg-[#fcfaf5] border-[#d24c58] text-[#d24c58] font-medium'
-                  }`}
-                >
-                  {type === 'zdravie' ? <CheckCircle2 className="w-6 h-6" /> : <Circle className="w-6 h-6" />}
-                  <span className="ml-[8px] text-[17px]">о здравии</span>
-                </button>
+                {treba !== 'Панихида' && (
+                  <button 
+                    onClick={() => setType('zdravie')} 
+                    className={`flex-1 flex justify-center items-center py-[16px] rounded-[14px] border-2 transition-all ${
+                      type === 'zdravie' 
+                        ? 'bg-[#d24c58] border-[#d24c58] text-white shadow-md font-medium' 
+                        : 'bg-[#fcfaf5] border-[#d24c58] text-[#d24c58] font-medium'
+                    }`}
+                  >
+                    {type === 'zdravie' ? <CheckCircle2 className="w-6 h-6" /> : <Circle className="w-6 h-6" />}
+                    <span className="ml-[8px] text-[17px]">о здравии</span>
+                  </button>
+                )}
                 <button 
                   onClick={() => setType('upokoenie')} 
-                  className={`flex-1 flex justify-center items-center py-[16px] rounded-[14px] border-2 transition-all ${
+                  className={`flex justify-center items-center py-[16px] rounded-[14px] border-2 transition-all ${
+                    treba === 'Панихида' ? 'w-full' : 'flex-1'
+                  } ${
                     type === 'upokoenie' 
                       ? 'bg-[#40434f] border-[#40434f] text-white shadow-md font-medium' 
                       : 'bg-[#fcfaf5] border-[#40434f] text-[#40434f] font-medium'

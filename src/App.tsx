@@ -46,8 +46,8 @@ const IntroText = () => (
     <p className="mb-2">
       В случае возникновения вопросов обращайтесь в службу технической
       поддержки по электронной почте:<br />
-      <a href="mailto:e.masurnovskaya@obitel-minsk.by" className="text-[#942e39]">
-        e.masurnovskaya@obitel-minsk.by
+      <a href="mailto:Alexbelskid@gmail.com" className="text-[#942e39]">
+        Alexbelskid@gmail.com
       </a>
     </p>
   </div>

@@ -70,24 +70,26 @@ export default function App() {
   const showDuration = treba === 'Сорокоуст';
   const showAkafistTargets = treba === 'Акафист';
   const filledNamesCount = names.filter(name => name.trim() !== '').length;
+  const perNotePrices: Record<string, number> = {
+    'Проскомидия': 3,
+    'Обедня': 8,
+    'Молебен': 5,
+    'Панихида': 5,
+    'Акафист': 8,
+  };
+  const notePrice = perNotePrices[treba] ?? 0;
   const donationAmount =
-    treba === 'Проскомидия' && filledNamesCount > 0
-      ? Math.ceil(filledNamesCount / 12) * 3
-      : treba === 'Обедня' && filledNamesCount > 0
-        ? Math.ceil(filledNamesCount / 12) * 8
-        : treba === 'Сорокоуст' && filledNamesCount > 0
-          ? filledNamesCount * 10
-          : 0;
+    treba === 'Сорокоуст' && filledNamesCount > 0
+      ? filledNamesCount * 10
+      : notePrice > 0 && filledNamesCount > 0
+        ? Math.ceil(filledNamesCount / 12) * notePrice
+        : 0;
   const donationHint =
-    treba === 'Проскомидия'
-      ? 'Для Проскомидии одна записка до 12 имен стоит 3 BYN. Если имен больше 12, считается следующая записка и сумма увеличивается еще на 3 BYN.'
-      : treba === 'Обедня'
-        ? 'Для Обедни одна записка до 12 имен стоит 8 BYN. Если имен больше 12, считается следующая записка и сумма увеличивается еще на 8 BYN.'
-        : treba === 'Сорокоуст'
-          ? 'Для Сорокоуста одно имя стоит 10 BYN.'
-          : treba === 'Акафист'
-            ? 'Выберите, кому подается акафист.'
-            : 'Выберите требу, чтобы увидеть сумму пожертвования.';
+    treba === 'Сорокоуст'
+      ? 'Для Сорокоуста одно имя стоит 10 BYN.'
+      : notePrice > 0
+        ? `Для требы «${treba}» одна записка до 12 имен стоит ${notePrice} BYN. Если имен больше 12, считается следующая записка и сумма увеличивается еще на ${notePrice} BYN.`
+        : 'Выберите требу, чтобы увидеть сумму пожертвования.';
 
   return (
     <div className="min-h-screen bg-[#8b97a2] font-sans flex justify-center w-full">

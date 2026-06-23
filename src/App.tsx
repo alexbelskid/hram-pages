@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { ArrowRight, CheckCircle2, ChevronDown, Circle } from 'lucide-react';
+import { CheckCircle2, ChevronDown, Circle } from 'lucide-react';
 import headerChurch from './assets/header-church.jpg';
 import crossSymbol from './assets/cross-symbol.png';
+import akafistKrest from './assets/akafist-krest.jpg';
+import akafistMlekopitatelnitsa from './assets/akafist-mlekopitatelnitsa.jpg';
 
 const LogoSeal = () => (
   <div className="flex items-center justify-center mb-8 mt-2 gap-[14px]">
@@ -64,20 +66,28 @@ export default function App() {
   const [names, setNames] = useState<string[]>(Array(10).fill(""));
   const [type, setType] = useState<"zdravie" | "upokoenie">("zdravie");
   const [duration, setDuration] = useState<string>("40 дней");
+  const [akafistTarget, setAkafistTarget] = useState<string>('Христу');
   const showDuration = treba === 'Сорокоуст';
+  const showAkafistTargets = treba === 'Акафист';
   const filledNamesCount = names.filter(name => name.trim() !== '').length;
   const donationAmount =
     treba === 'Проскомидия' && filledNamesCount > 0
       ? Math.ceil(filledNamesCount / 12) * 3
       : treba === 'Обедня' && filledNamesCount > 0
         ? Math.ceil(filledNamesCount / 12) * 8
-        : 0;
+        : treba === 'Сорокоуст' && filledNamesCount > 0
+          ? filledNamesCount * 10
+          : 0;
   const donationHint =
     treba === 'Проскомидия'
       ? 'Для Проскомидии одна записка до 12 имен стоит 3 BYN. Если имен больше 12, считается следующая записка и сумма увеличивается еще на 3 BYN.'
       : treba === 'Обедня'
         ? 'Для Обедни одна записка до 12 имен стоит 8 BYN. Если имен больше 12, считается следующая записка и сумма увеличивается еще на 8 BYN.'
-        : 'Выберите требу, чтобы увидеть сумму пожертвования.';
+        : treba === 'Сорокоуст'
+          ? 'Для Сорокоуста одно имя стоит 10 BYN.'
+          : treba === 'Акафист'
+            ? 'Выберите, кому подается акафист.'
+            : 'Выберите требу, чтобы увидеть сумму пожертвования.';
 
   return (
     <div className="min-h-screen bg-[#8b97a2] font-sans flex justify-center w-full">
@@ -184,6 +194,54 @@ export default function App() {
                       <span className="text-[17px]">{d}</span>
                     </button>
                   ))}
+                </div>
+              )}
+
+              {showAkafistTargets && (
+                <div className="grid grid-cols-2 gap-x-4 gap-y-6 pt-2">
+                  {[
+                    {
+                      value: 'Христу',
+                      label: 'Честному и Животворящему Кресту Господню',
+                      image: akafistKrest,
+                    },
+                    {
+                      value: 'Млекопитательница',
+                      label: 'Божией Матери «Млекопитательница»',
+                      image: akafistMlekopitatelnitsa,
+                    },
+                  ].map(option => {
+                    const selected = akafistTarget === option.value;
+
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setAkafistTarget(option.value)}
+                        className="flex flex-col items-center text-center"
+                      >
+                        <div className="relative">
+                          <div className="w-[132px] h-[132px] rounded-full border-[3px] border-[#8b3034] bg-white overflow-hidden shadow-sm">
+                            <img
+                              src={option.image}
+                              alt={option.label}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="absolute left-0 bottom-1 w-9 h-9 rounded-full bg-white border-2 border-[#8b3034] flex items-center justify-center shadow-sm">
+                            {selected ? (
+                              <CheckCircle2 className="w-7 h-7 text-[#8b3034] fill-white" />
+                            ) : (
+                              <Circle className="w-6 h-6 text-[#8b3034]" />
+                            )}
+                          </div>
+                        </div>
+                        <span className="mt-3 text-[14px] leading-[1.3] text-[#8b3034] font-medium max-w-[160px]">
+                          {option.label}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>

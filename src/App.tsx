@@ -65,6 +65,19 @@ export default function App() {
   const [type, setType] = useState<"zdravie" | "upokoenie">("zdravie");
   const [duration, setDuration] = useState<string>("40 дней");
   const showDuration = treba === 'Сорокоуст';
+  const filledNamesCount = names.filter(name => name.trim() !== '').length;
+  const donationAmount =
+    treba === 'Проскомидия' && filledNamesCount > 0
+      ? Math.ceil(filledNamesCount / 12) * 3
+      : treba === 'Обедня' && filledNamesCount > 0
+        ? Math.ceil(filledNamesCount / 12) * 8
+        : 0;
+  const donationHint =
+    treba === 'Проскомидия'
+      ? 'Для Проскомидии одна записка до 12 имен стоит 3 BYN. Если имен больше 12, считается следующая записка и сумма увеличивается еще на 3 BYN.'
+      : treba === 'Обедня'
+        ? 'Для Обедни одна записка до 12 имен стоит 8 BYN. Если имен больше 12, считается следующая записка и сумма увеличивается еще на 8 BYN.'
+        : 'Выберите требу, чтобы увидеть сумму пожертвования.';
 
   return (
     <div className="min-h-screen bg-[#8b97a2] font-sans flex justify-center w-full">
@@ -123,7 +136,7 @@ export default function App() {
             {/* Extra options */}
             <div className="mb-10 space-y-[14px]">
               <p className="text-[#a54c52] text-[13px] leading-tight mt-1 px-1">
-                Размер пожертвования указан за одно имя. При добавлении имен размер пожертвования будет увеличен.
+                {donationHint}
               </p>
 
               <div className="flex gap-3 pt-2">
@@ -221,7 +234,7 @@ export default function App() {
 
           <div className="flex gap-[14px]">
             <div className="flex-1 bg-[#a2aab2] text-[#697481] rounded-[14px] py-[16px] text-center font-bold text-[28px] shadow-inner select-none tracking-wider">
-              0
+              {donationAmount}
             </div>
             <div className="flex-1 bg-[#fcfaf5] text-[#8b3034] rounded-[14px] py-[16px] text-center font-bold text-[28px] shadow-sm select-none tracking-wider">
               BYN

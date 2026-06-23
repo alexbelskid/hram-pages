@@ -55,12 +55,12 @@ const IntroText = () => (
 
 export default function App() {
   const TREBAS = [
+    "Проскомидия",
     "Обедня",
     "Молебен",
     "Панихида",
     "Акафист",
     "Сорокоуст",
-    "Проскомидия",
   ];
 
   const [treba, setTreba] = useState<string>("Выберите требу");

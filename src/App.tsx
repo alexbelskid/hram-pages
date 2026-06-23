@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowRight, CheckCircle2, ChevronDown, Circle } from 'lucide-react';
+import headerChurch from './assets/header-church.jpg';
 
 const LogoSeal = () => (
   <div className="flex items-center justify-center mb-8 mt-2 gap-[14px]">
@@ -75,8 +76,8 @@ export default function App() {
           {/* Header Image */}
           <div className="w-full h-[240px] relative bg-gray-200 flex items-center justify-center">
             <img 
-              src="https://images.unsplash.com/photo-1519491050282-cf00c82424b4?auto=format&fit=crop&w=1000&q=80" 
-              alt="Горящие церковные свечи" 
+              src={headerChurch}
+              alt="Интерьер храма"
               className="absolute inset-0 w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-black/40" />

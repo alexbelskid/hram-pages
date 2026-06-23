@@ -1,18 +1,17 @@
 import React, { useState } from 'react';
 import { ArrowRight, CheckCircle2, ChevronDown, Circle } from 'lucide-react';
 import headerChurch from './assets/header-church.jpg';
+import crossSymbol from './assets/cross-symbol.png';
 
 const LogoSeal = () => (
   <div className="flex items-center justify-center mb-8 mt-2 gap-[14px]">
     <div className="w-[6px] h-[6px] rotate-45 bg-[#8b3034]"></div>
     <div className="w-[6px] h-[6px] rotate-45 bg-[#8b3034]"></div>
-    <svg width="56" height="56" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="mx-2">
-      <circle cx="50" cy="50" r="48" stroke="#8b3034" strokeWidth="2" />
-      <circle cx="50" cy="50" r="40" stroke="#8b3034" strokeWidth="1" strokeDasharray="4 4" />
-      <path d="M50 20 L50 80 M25 35 L75 35 M32 65 L68 53" stroke="#8b3034" strokeWidth="4" />
-      <text x="26" y="55" fill="#8b3034" fontSize="13" fontWeight="800" fontFamily="sans-serif">NI</text>
-      <text x="59" y="55" fill="#8b3034" fontSize="13" fontWeight="800" fontFamily="sans-serif">KA</text>
-    </svg>
+    <img
+      src={crossSymbol}
+      alt="Крест"
+      className="mx-2 w-[56px] h-[56px] object-contain"
+    />
     <div className="w-[6px] h-[6px] rotate-45 bg-[#8b3034]"></div>
     <div className="w-[6px] h-[6px] rotate-45 bg-[#8b3034]"></div>
   </div>

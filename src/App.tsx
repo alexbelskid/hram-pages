@@ -67,6 +67,7 @@ export default function App() {
   const [names, setNames] = useState<string[]>(Array(10).fill(""));
   const [type, setType] = useState<"zdravie" | "upokoenie">("zdravie");
   const [duration, setDuration] = useState<string>("40 дней");
+  const showDuration = treba === 'Сорокоуст';
 
   return (
     <div className="min-h-screen bg-[#8b97a2] font-sans flex justify-center w-full">
@@ -101,6 +102,9 @@ export default function App() {
                   setTreba(value);
                   if (value === 'Панихида') {
                     setType('upokoenie');
+                  }
+                  if (value !== 'Сорокоуст') {
+                    setDuration('40 дней');
                   }
                 }}
                 className="opacity-0 absolute inset-0 w-full h-full cursor-pointer z-10"
@@ -154,22 +158,24 @@ export default function App() {
                 </button>
               </div>
 
-              <div className="flex flex-wrap gap-3 pt-1">
-                {['40 дней', '6 месяцев', '1 год'].map(d => (
-                  <button 
-                    key={d} 
-                    onClick={() => setDuration(d)} 
-                    className={`flex items-center flex-1 min-w-[100px] justify-center py-[16px] rounded-[14px] border-[1.5px] transition-all ${
-                      duration === d 
-                        ? 'bg-white border-[#8faad9] text-[#333] shadow-sm font-medium' 
-                        : 'bg-[#fcfaf5] border-[#dfd6cb] text-gray-400 font-medium'
-                    }`}
-                  >
-                    {duration === d ? <CheckCircle2 className="w-6 h-6 mr-2 text-[#8faad9] stroke-[2.5]" /> : <Circle className="w-6 h-6 mr-2 text-[#dfd6cb]" />}
-                    <span className="text-[17px]">{d}</span>
-                  </button>
-                ))}
-              </div>
+              {showDuration && (
+                <div className="flex flex-wrap gap-3 pt-1">
+                  {['40 дней', '6 месяцев', '1 год'].map(d => (
+                    <button 
+                      key={d} 
+                      onClick={() => setDuration(d)} 
+                      className={`flex items-center flex-1 min-w-[100px] justify-center py-[16px] rounded-[14px] border-[1.5px] transition-all ${
+                        duration === d 
+                          ? 'bg-white border-[#8faad9] text-[#333] shadow-sm font-medium' 
+                          : 'bg-[#fcfaf5] border-[#dfd6cb] text-gray-400 font-medium'
+                      }`}
+                    >
+                      {duration === d ? <CheckCircle2 className="w-6 h-6 mr-2 text-[#8faad9] stroke-[2.5]" /> : <Circle className="w-6 h-6 mr-2 text-[#dfd6cb]" />}
+                      <span className="text-[17px]">{d}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Names Input List */}

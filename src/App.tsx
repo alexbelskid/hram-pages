@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CheckCircle2, ChevronDown, Circle } from 'lucide-react';
-import headerChurch from './assets/header-church.jpg';
+import headerChapel from './assets/header-chapel.jpg';
 import crossSymbol from './assets/cross-symbol.png';
 import akafistKrest from './assets/akafist-krest.jpg';
 import akafistMlekopitatelnitsa from './assets/akafist-mlekopitatelnitsa.jpg';
@@ -41,10 +41,10 @@ const IntroText = () => (
       некрещеного, обязательно указывайте это в записке рядом с именем.
     </p>
 
-
     <p className="mb-2">
       В случае возникновения вопросов обращайтесь в службу технической
-      поддержки по электронной почте:<br />
+      поддержки по электронной почте:
+      <br />
       <a href="mailto:Alexbelskid@gmail.com" className="text-[#942e39]">
         Alexbelskid@gmail.com
       </a>
@@ -54,29 +54,33 @@ const IntroText = () => (
 
 export default function App() {
   const TREBAS = [
-    "Проскомидия",
-    "Обедня",
-    "Молебен",
-    "Панихида",
-    "Акафист",
-    "Сорокоуст",
+    'Проскомидия',
+    'Обедня',
+    'Молебен',
+    'Панихида',
+    'Акафист',
+    'Сорокоуст',
   ];
 
-  const [treba, setTreba] = useState<string>("Выберите требу");
-  const [names, setNames] = useState<string[]>(Array(10).fill(""));
-  const [type, setType] = useState<"zdravie" | "upokoenie">("zdravie");
-  const [duration, setDuration] = useState<string>("40 дней");
+  const [treba, setTreba] = useState<string>('Выберите требу');
+  const [names, setNames] = useState<string[]>(Array(10).fill(''));
+  const [type, setType] = useState<'zdravie' | 'upokoenie'>('zdravie');
+  const [duration, setDuration] = useState<string>('40 дней');
   const [akafistTarget, setAkafistTarget] = useState<string>('Христу');
+
+  const isTrebaSelected = treba !== 'Выберите требу';
   const showDuration = treba === 'Сорокоуст';
   const showAkafistTargets = treba === 'Акафист';
   const filledNamesCount = names.filter(name => name.trim() !== '').length;
+
   const perNotePrices: Record<string, number> = {
-    'Проскомидия': 3,
-    'Обедня': 8,
-    'Молебен': 5,
-    'Панихида': 5,
-    'Акафист': 8,
+    Проскомидия: 3,
+    Обедня: 8,
+    Молебен: 5,
+    Панихида: 5,
+    Акафист: 8,
   };
+
   const notePrice = perNotePrices[treba] ?? 0;
   const donationAmount =
     treba === 'Сорокоуст' && filledNamesCount > 0
@@ -84,24 +88,24 @@ export default function App() {
       : notePrice > 0 && filledNamesCount > 0
         ? Math.ceil(filledNamesCount / 12) * notePrice
         : 0;
+
   const donationHint =
-    treba === 'Сорокоуст'
-      ? 'Для Сорокоуста одно имя стоит 10 BYN.'
-      : notePrice > 0
-        ? `Для требы «${treba}» одна записка до 12 имен стоит ${notePrice} BYN. Если имен больше 12, считается следующая записка и сумма увеличивается еще на ${notePrice} BYN.`
-        : 'Выберите требу, чтобы увидеть сумму пожертвования.';
+    !isTrebaSelected
+      ? 'Выберите требу, чтобы увидеть сумму пожертвования.'
+      : treba === 'Сорокоуст'
+        ? 'Для Сорокоуста одно имя стоит 10 BYN.'
+        : notePrice > 0
+          ? `Для требы «${treba}» одна записка до 12 имен стоит ${notePrice} BYN. Если имен больше 12, считается следующая записка и сумма увеличивается еще на ${notePrice} BYN.`
+          : 'Выберите требу, чтобы увидеть сумму пожертвования.';
 
   return (
     <div className="min-h-screen bg-[#8b97a2] font-sans flex justify-center w-full">
       <div className="w-full max-w-[480px] bg-[#8b97a2] shadow-2xl relative">
-        
-        {/* Main White Card top section */}
         <div className="bg-[#fcfaf5] rounded-b-[32px] pb-[44px] shadow-sm">
-          {/* Header Image */}
           <div className="w-full h-[240px] relative bg-gray-200 flex items-center justify-center">
-            <img 
-              src={headerChurch}
-              alt="Интерьер храма"
+            <img
+              src={headerChapel}
+              alt="Часовня внутри храма"
               className="absolute inset-0 w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-black/40" />
@@ -112,32 +116,39 @@ export default function App() {
 
           <LogoSeal />
 
-          {/* Form Content inside white card */}
           <div className="px-6 mt-2">
-            
-            {/* Treba Select */}
             <div className="relative mb-10">
-              <select 
+              <select
                 value={treba}
                 onChange={e => {
                   const value = e.target.value;
                   setTreba(value);
+
                   if (value === 'Панихида') {
                     setType('upokoenie');
                   }
                   if (value !== 'Сорокоуст') {
                     setDuration('40 дней');
                   }
+                  if (value !== 'Акафист') {
+                    setAkafistTarget('Христу');
+                  }
                 }}
                 className="opacity-0 absolute inset-0 w-full h-full cursor-pointer z-10"
               >
-                <option value="Выберите требу" disabled>Выберите требу</option>
-                {TREBAS.map(t => <option key={t} value={t}>{t}</option>)}
+                <option value="Выберите требу" disabled>
+                  Выберите требу
+                </option>
+                {TREBAS.map(t => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
               </select>
 
               <div className="border-[1.5px] border-[#8b3034] text-[#8b3034] rounded-full py-[14px] px-6 flex justify-center items-center bg-[#fcfaf5] pointer-events-none relative shadow-sm">
                 <span className="text-[22px] uppercase font-bold tracking-tight">
-                  {treba === "Выберите требу" ? "ВЫБЕРИТЕ ТРЕБУ" : treba}
+                  {treba === 'Выберите требу' ? 'ВЫБЕРИТЕ ТРЕБУ' : treba}
                 </span>
                 <div className="absolute right-[14px] w-[34px] h-[34px] rounded-full border-[1.5px] border-[#8b3034] flex items-center justify-center bg-[#fcfaf5]">
                   <ChevronDown className="w-6 h-6 stroke-[2.5]" />
@@ -145,119 +156,137 @@ export default function App() {
               </div>
             </div>
 
-            {/* Extra options */}
             <div className="mb-10 space-y-[14px]">
               <p className="text-[#a54c52] text-[13px] leading-tight mt-1 px-1">
                 {donationHint}
               </p>
 
-              <div className="flex gap-3 pt-2">
-                {treba !== 'Панихида' && (
-                  <button 
-                    onClick={() => setType('zdravie')} 
-                    className={`flex-1 flex justify-center items-center py-[16px] rounded-[14px] border-2 transition-all ${
-                      type === 'zdravie' 
-                        ? 'bg-[#d24c58] border-[#d24c58] text-white shadow-md font-medium' 
-                        : 'bg-[#fcfaf5] border-[#d24c58] text-[#d24c58] font-medium'
-                    }`}
-                  >
-                    {type === 'zdravie' ? <CheckCircle2 className="w-6 h-6" /> : <Circle className="w-6 h-6" />}
-                    <span className="ml-[8px] text-[17px]">о здравии</span>
-                  </button>
-                )}
-                <button 
-                  onClick={() => setType('upokoenie')} 
-                  className={`flex justify-center items-center py-[16px] rounded-[14px] border-2 transition-all ${
-                    treba === 'Панихида' ? 'w-full' : 'flex-1'
-                  } ${
-                    type === 'upokoenie' 
-                      ? 'bg-[#40434f] border-[#40434f] text-white shadow-md font-medium' 
-                      : 'bg-[#fcfaf5] border-[#40434f] text-[#40434f] font-medium'
-                  }`}
-                >
-                  {type === 'upokoenie' ? <CheckCircle2 className="w-6 h-6" /> : <Circle className="w-6 h-6" />}
-                  <span className="ml-[8px] text-[17px]">об упокоении</span>
-                </button>
-              </div>
+              {isTrebaSelected && (
+                <>
+                  <div className="flex gap-3 pt-2">
+                    {treba !== 'Панихида' && (
+                      <button
+                        type="button"
+                        onClick={() => setType('zdravie')}
+                        className={`flex-1 flex justify-center items-center py-[16px] rounded-[14px] border-2 transition-all ${
+                          type === 'zdravie'
+                            ? 'bg-[#d24c58] border-[#d24c58] text-white shadow-md font-medium'
+                            : 'bg-[#fcfaf5] border-[#d24c58] text-[#d24c58] font-medium'
+                        }`}
+                      >
+                        {type === 'zdravie' ? (
+                          <CheckCircle2 className="w-6 h-6" />
+                        ) : (
+                          <Circle className="w-6 h-6" />
+                        )}
+                        <span className="ml-[8px] text-[17px]">о здравии</span>
+                      </button>
+                    )}
 
-              {showDuration && (
-                <div className="flex flex-wrap gap-3 pt-1">
-                  {['40 дней', '6 месяцев', '1 год'].map(d => (
-                    <button 
-                      key={d} 
-                      onClick={() => setDuration(d)} 
-                      className={`flex items-center flex-1 min-w-[100px] justify-center py-[16px] rounded-[14px] border-[1.5px] transition-all ${
-                        duration === d 
-                          ? 'bg-white border-[#8faad9] text-[#333] shadow-sm font-medium' 
-                          : 'bg-[#fcfaf5] border-[#dfd6cb] text-gray-400 font-medium'
+                    <button
+                      type="button"
+                      onClick={() => setType('upokoenie')}
+                      className={`flex justify-center items-center py-[16px] rounded-[14px] border-2 transition-all ${
+                        treba === 'Панихида' ? 'w-full' : 'flex-1'
+                      } ${
+                        type === 'upokoenie'
+                          ? 'bg-[#40434f] border-[#40434f] text-white shadow-md font-medium'
+                          : 'bg-[#fcfaf5] border-[#40434f] text-[#40434f] font-medium'
                       }`}
                     >
-                      {duration === d ? <CheckCircle2 className="w-6 h-6 mr-2 text-[#8faad9] stroke-[2.5]" /> : <Circle className="w-6 h-6 mr-2 text-[#dfd6cb]" />}
-                      <span className="text-[17px]">{d}</span>
+                      {type === 'upokoenie' ? (
+                        <CheckCircle2 className="w-6 h-6" />
+                      ) : (
+                        <Circle className="w-6 h-6" />
+                      )}
+                      <span className="ml-[8px] text-[17px]">об упокоении</span>
                     </button>
-                  ))}
-                </div>
-              )}
+                  </div>
 
-              {showAkafistTargets && (
-                <div className="grid grid-cols-2 gap-x-4 gap-y-6 pt-2">
-                  {[
-                    {
-                      value: 'Христу',
-                      label: 'Честному и Животворящему Кресту Господню',
-                      image: akafistKrest,
-                    },
-                    {
-                      value: 'Млекопитательница',
-                      label: 'Божией Матери «Млекопитательница»',
-                      image: akafistMlekopitatelnitsa,
-                    },
-                  ].map(option => {
-                    const selected = akafistTarget === option.value;
+                  {showDuration && (
+                    <div className="flex flex-wrap gap-3 pt-1">
+                      {['40 дней', '6 месяцев', '1 год'].map(d => (
+                        <button
+                          type="button"
+                          key={d}
+                          onClick={() => setDuration(d)}
+                          className={`flex items-center flex-1 min-w-[100px] justify-center py-[16px] rounded-[14px] border-[1.5px] transition-all ${
+                            duration === d
+                              ? 'bg-white border-[#8faad9] text-[#333] shadow-sm font-medium'
+                              : 'bg-[#fcfaf5] border-[#dfd6cb] text-gray-400 font-medium'
+                          }`}
+                        >
+                          {duration === d ? (
+                            <CheckCircle2 className="w-6 h-6 mr-2 text-[#8faad9] stroke-[2.5]" />
+                          ) : (
+                            <Circle className="w-6 h-6 mr-2 text-[#dfd6cb]" />
+                          )}
+                          <span className="text-[17px]">{d}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
 
-                    return (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => setAkafistTarget(option.value)}
-                        className="flex flex-col items-center text-center"
-                      >
-                        <div className="relative">
-                          <div className="w-[132px] h-[132px] rounded-full border-[3px] border-[#8b3034] bg-white overflow-hidden shadow-sm">
-                            <img
-                              src={option.image}
-                              alt={option.label}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <div className="absolute left-0 bottom-1 w-9 h-9 rounded-full bg-white border-2 border-[#8b3034] flex items-center justify-center shadow-sm">
-                            {selected ? (
-                              <CheckCircle2 className="w-7 h-7 text-[#8b3034] fill-white" />
-                            ) : (
-                              <Circle className="w-6 h-6 text-[#8b3034]" />
-                            )}
-                          </div>
-                        </div>
-                        <span className="mt-3 text-[14px] leading-[1.3] text-[#8b3034] font-medium max-w-[160px]">
-                          {option.label}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
+                  {showAkafistTargets && (
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-6 pt-2">
+                      {[
+                        {
+                          value: 'Христу',
+                          label: 'Честному и Животворящему Кресту Господню',
+                          image: akafistKrest,
+                        },
+                        {
+                          value: 'Млекопитательница',
+                          label: 'Божией Матери «Млекопитательница»',
+                          image: akafistMlekopitatelnitsa,
+                        },
+                      ].map(option => {
+                        const selected = akafistTarget === option.value;
+
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => setAkafistTarget(option.value)}
+                            className="flex flex-col items-center text-center"
+                          >
+                            <div className="relative">
+                              <div className="w-[132px] h-[132px] rounded-full border-[3px] border-[#8b3034] bg-white overflow-hidden shadow-sm">
+                                <img
+                                  src={option.image}
+                                  alt={option.label}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <div className="absolute left-0 bottom-1 w-9 h-9 rounded-full bg-white border-2 border-[#8b3034] flex items-center justify-center shadow-sm">
+                                {selected ? (
+                                  <CheckCircle2 className="w-7 h-7 text-[#8b3034] fill-white" />
+                                ) : (
+                                  <Circle className="w-6 h-6 text-[#8b3034]" />
+                                )}
+                              </div>
+                            </div>
+                            <span className="mt-3 text-[14px] leading-[1.3] text-[#8b3034] font-medium max-w-[160px]">
+                              {option.label}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
-            {/* Names Input List */}
             <div className="space-y-[18px]">
               {names.map((name, idx) => (
                 <div key={idx} className="flex gap-3 items-end">
                   <span className="text-[#8b3034] font-medium text-[19px] min-w-[24px] text-right pb-[2px]">
                     {idx + 1}.
                   </span>
-                  <input 
-                    className="flex-1 pb-[6px] px-1 border-b-[1.5px] border-[#8b3034] bg-transparent outline-none italic placeholder:text-gray-400 text-gray-700 text-[17px]" 
-                    placeholder="Добавьте ИМЯ в родительном падеже" 
+                  <input
+                    className="flex-1 pb-[6px] px-1 border-b-[1.5px] border-[#8b3034] bg-transparent outline-none italic placeholder:text-gray-400 text-gray-700 text-[17px]"
+                    placeholder="Добавьте ИМЯ в родительном падеже"
                     value={name}
                     onChange={e => {
                       const arr = [...names];
@@ -270,24 +299,23 @@ export default function App() {
             </div>
 
             <div className="mt-10 flex justify-center">
-              <button 
-                onClick={() => setNames([...names, ""])}
+              <button
+                type="button"
+                onClick={() => setNames([...names, ''])}
                 className="bg-[#c2b6a5] text-white px-8 py-[14px] rounded-xl font-medium text-[18px] shadow-sm tracking-wide"
               >
                 Добавить еще имя
               </button>
             </div>
-            
           </div>
         </div>
 
-        {/* Bottom Slate Form */}
         <div className="px-6 py-10 flex flex-col gap-10">
-          <input 
-            className="w-full bg-[#fdfaf5] rounded-[14px] px-5 py-[18px] italic text-[#666] outline-none text-[18px] placeholder:text-gray-400 font-medium shadow-sm" 
-            placeholder="Ваше имя" 
+          <input
+            className="w-full bg-[#fdfaf5] rounded-[14px] px-5 py-[18px] italic text-[#666] outline-none text-[18px] placeholder:text-gray-400 font-medium shadow-sm"
+            placeholder="Ваше имя"
           />
-          
+
           <div className="text-center italic text-white text-[20px] font-light">
             Общая сумма пожертвования:
           </div>
@@ -305,10 +333,9 @@ export default function App() {
             ПОДАТЬ ЗАПИСКУ
           </button>
         </div>
-        
+
         <IntroText />
       </div>
     </div>
   );
 }
-

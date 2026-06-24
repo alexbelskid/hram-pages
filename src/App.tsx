@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CheckCircle2, ChevronDown, Circle } from 'lucide-react';
 import headerChapel from './assets/header-chapel.jpg';
-import crossSymbol from './assets/cross-symbol.png';
+import crossSymbol from './assets/cross-celtic.png';
 import akafistKrest from './assets/akafist-krest.jpg';
 import akafistMlekopitatelnitsa from './assets/akafist-mlekopitatelnitsa.jpg';
 
@@ -11,8 +11,8 @@ const LogoSeal = () => (
     <div className="w-[6px] h-[6px] rotate-45 bg-[#8b3034]"></div>
     <img
       src={crossSymbol}
-      alt="Крест"
-      className="mx-2 w-[56px] h-[56px] object-contain"
+      alt="Кельтский крест"
+      className="mx-2 w-[72px] h-[72px] object-contain"
     />
     <div className="w-[6px] h-[6px] rotate-45 bg-[#8b3034]"></div>
     <div className="w-[6px] h-[6px] rotate-45 bg-[#8b3034]"></div>
@@ -52,6 +52,37 @@ const IntroText = () => (
   </div>
 );
 
+const SuccessScreen = ({ onReset }: { onReset: () => void }) => (
+  <div className="min-h-screen bg-[#8b97a2] font-sans flex justify-center w-full">
+    <div className="w-full max-w-[480px] bg-[#8b97a2] shadow-2xl relative">
+      <div className="bg-[#fcfaf5] min-h-screen px-6 py-12 flex flex-col items-center justify-center text-center">
+        <img
+          src={crossSymbol}
+          alt="Кельтский крест"
+          className="w-[84px] h-[84px] object-contain mb-6"
+        />
+        <div className="w-16 h-16 rounded-full bg-[#8b3034] flex items-center justify-center shadow-md mb-6">
+          <CheckCircle2 className="w-9 h-9 text-white" />
+        </div>
+        <h1 className="text-[#8b3034] text-[28px] font-bold uppercase tracking-wide mb-4">
+          Записка успешно подана
+        </h1>
+        <p className="text-gray-700 text-[17px] leading-[1.6] max-w-[320px] mb-8">
+          Спасибо. Ваша записка принята. Если потребуется, с вами свяжутся по
+          указанным данным.
+        </p>
+        <button
+          type="button"
+          onClick={onReset}
+          className="w-full max-w-[320px] bg-[#8b3034] text-white rounded-[16px] py-[18px] text-[20px] uppercase font-bold shadow-xl tracking-wide"
+        >
+          Подать еще записку
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
 export default function App() {
   const TREBAS = [
     'Проскомидия',
@@ -67,6 +98,8 @@ export default function App() {
   const [type, setType] = useState<'zdravie' | 'upokoenie'>('zdravie');
   const [duration, setDuration] = useState<string>('40 дней');
   const [akafistTarget, setAkafistTarget] = useState<string>('Христу');
+  const [senderName, setSenderName] = useState<string>('');
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const isTrebaSelected = treba !== 'Выберите требу';
   const showDuration = treba === 'Сорокоуст';
@@ -97,6 +130,27 @@ export default function App() {
         : notePrice > 0
           ? `Для требы «${treba}» одна записка до 12 имен стоит ${notePrice} BYN. Если имен больше 12, считается следующая записка и сумма увеличивается еще на ${notePrice} BYN.`
           : 'Выберите требу, чтобы увидеть сумму пожертвования.';
+
+  const handleSubmit = () => {
+    if (!isTrebaSelected || filledNamesCount === 0 || senderName.trim() === '') {
+      return;
+    }
+    setIsSubmitted(true);
+  };
+
+  const handleReset = () => {
+    setTreba('Выберите требу');
+    setNames(Array(10).fill(''));
+    setType('zdravie');
+    setDuration('40 дней');
+    setAkafistTarget('Христу');
+    setSenderName('');
+    setIsSubmitted(false);
+  };
+
+  if (isSubmitted) {
+    return <SuccessScreen onReset={handleReset} />;
+  }
 
   return (
     <div className="min-h-screen bg-[#8b97a2] font-sans flex justify-center w-full">
@@ -314,6 +368,8 @@ export default function App() {
           <input
             className="w-full bg-[#fdfaf5] rounded-[14px] px-5 py-[18px] italic text-[#666] outline-none text-[18px] placeholder:text-gray-400 font-medium shadow-sm"
             placeholder="Ваше имя"
+            value={senderName}
+            onChange={e => setSenderName(e.target.value)}
           />
 
           <div className="text-center italic text-white text-[20px] font-light">
@@ -329,7 +385,16 @@ export default function App() {
             </div>
           </div>
 
-          <button className="w-full bg-[#fcfaf5] text-[#8b3034] rounded-[16px] py-[22px] text-[24px] uppercase font-bold shadow-xl flex justify-center items-center tracking-wide">
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={!isTrebaSelected || filledNamesCount === 0 || senderName.trim() === ''}
+            className={`w-full rounded-[16px] py-[22px] text-[24px] uppercase font-bold shadow-xl flex justify-center items-center tracking-wide transition-opacity ${
+              !isTrebaSelected || filledNamesCount === 0 || senderName.trim() === ''
+                ? 'bg-[#d8d2ca] text-[#8e877f] cursor-not-allowed opacity-70'
+                : 'bg-[#fcfaf5] text-[#8b3034]'
+            }`}
+          >
             ПОДАТЬ ЗАПИСКУ
           </button>
         </div>

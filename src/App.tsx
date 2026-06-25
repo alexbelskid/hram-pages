@@ -104,6 +104,7 @@ export default function App() {
   const isTrebaSelected = treba !== 'Выберите требу';
   const showDuration = treba === 'Сорокоуст';
   const showAkafistTargets = treba === 'Акафист';
+  const canChooseUpokoenie = !['Молебен', 'Акафист'].includes(treba);
   const filledNamesCount = names.filter(name => name.trim() !== '').length;
 
   const perNotePrices: Record<string, number> = {
@@ -180,6 +181,8 @@ export default function App() {
 
                   if (value === 'Панихида') {
                     setType('upokoenie');
+                  } else if (value === 'Молебен' || value === 'Акафист') {
+                    setType('zdravie');
                   }
                   if (value !== 'Сорокоуст') {
                     setDuration('40 дней');
@@ -220,43 +223,45 @@ export default function App() {
               {isTrebaSelected && (
                 <>
                   <div className="flex gap-3 pt-2">
-                    {treba !== 'Панихида' && (
-                      <button
-                        type="button"
-                        onClick={() => setType('zdravie')}
-                        className={`flex-1 flex justify-center items-center py-[16px] rounded-[14px] border-2 transition-all ${
-                          type === 'zdravie'
-                            ? 'bg-[#d24c58] border-[#d24c58] text-white shadow-md font-medium'
-                            : 'bg-[#fcfaf5] border-[#d24c58] text-[#d24c58] font-medium'
-                        }`}
-                      >
-                        {type === 'zdravie' ? (
-                          <CheckCircle2 className="w-6 h-6" />
-                        ) : (
-                          <Circle className="w-6 h-6" />
-                        )}
-                        <span className="ml-[8px] text-[17px]">о здравии</span>
-                      </button>
-                    )}
-
                     <button
                       type="button"
-                      onClick={() => setType('upokoenie')}
+                      onClick={() => setType('zdravie')}
                       className={`flex justify-center items-center py-[16px] rounded-[14px] border-2 transition-all ${
-                        treba === 'Панихида' ? 'w-full' : 'flex-1'
+                        treba === 'Панихида' || !canChooseUpokoenie ? 'w-full' : 'flex-1'
                       } ${
-                        type === 'upokoenie'
-                          ? 'bg-[#40434f] border-[#40434f] text-white shadow-md font-medium'
-                          : 'bg-[#fcfaf5] border-[#40434f] text-[#40434f] font-medium'
+                        type === 'zdravie'
+                          ? 'bg-[#d24c58] border-[#d24c58] text-white shadow-md font-medium'
+                          : 'bg-[#fcfaf5] border-[#d24c58] text-[#d24c58] font-medium'
                       }`}
                     >
-                      {type === 'upokoenie' ? (
+                      {type === 'zdravie' ? (
                         <CheckCircle2 className="w-6 h-6" />
                       ) : (
                         <Circle className="w-6 h-6" />
                       )}
-                      <span className="ml-[8px] text-[17px]">об упокоении</span>
+                      <span className="ml-[8px] text-[17px]">о здравии</span>
                     </button>
+
+                    {canChooseUpokoenie && (
+                      <button
+                        type="button"
+                        onClick={() => setType('upokoenie')}
+                        className={`flex justify-center items-center py-[16px] rounded-[14px] border-2 transition-all ${
+                          treba === 'Панихида' ? 'w-full' : 'flex-1'
+                        } ${
+                          type === 'upokoenie'
+                            ? 'bg-[#40434f] border-[#40434f] text-white shadow-md font-medium'
+                            : 'bg-[#fcfaf5] border-[#40434f] text-[#40434f] font-medium'
+                        }`}
+                      >
+                        {type === 'upokoenie' ? (
+                          <CheckCircle2 className="w-6 h-6" />
+                        ) : (
+                          <Circle className="w-6 h-6" />
+                        )}
+                        <span className="ml-[8px] text-[17px]">об упокоении</span>
+                      </button>
+                    )}
                   </div>
 
                   {showDuration && (

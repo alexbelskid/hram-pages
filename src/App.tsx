@@ -211,9 +211,11 @@ export default function App() {
             </div>
 
             <div className="mb-10 space-y-[14px]">
-              <p className="text-[#a54c52] text-[13px] leading-tight mt-1 px-1">
-                {donationHint}
-              </p>
+              {isTrebaSelected && (
+                <p className="text-[#a54c52] text-[13px] leading-tight mt-1 px-1">
+                  {donationHint}
+                </p>
+              )}
 
               {isTrebaSelected && (
                 <>

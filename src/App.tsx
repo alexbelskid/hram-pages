@@ -215,12 +215,6 @@ export default function App() {
 
             <div className="mb-10 space-y-[14px]">
               {isTrebaSelected && (
-                <p className="text-[#a54c52] text-[13px] leading-tight mt-1 px-1">
-                  {donationHint}
-                </p>
-              )}
-
-              {isTrebaSelected && (
                 <>
                   <div className="flex gap-3 pt-2">
                     <button
@@ -391,6 +385,12 @@ export default function App() {
               BYN
             </div>
           </div>
+
+          {isTrebaSelected && (
+            <p className="text-[#fcfaf5] text-[14px] leading-snug text-center -mt-4 px-1">
+              {donationHint}
+            </p>
+          )}
 
           <button
             type="button"

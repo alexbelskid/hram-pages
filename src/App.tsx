@@ -266,7 +266,7 @@ export default function App() {
 
                   {showDuration && (
                     <div className="flex flex-wrap gap-3 pt-1">
-                      {['40 дней', '6 месяцев', '1 год'].map(d => (
+                      {['40 дней'].map(d => (
                         <button
                           type="button"
                           key={d}

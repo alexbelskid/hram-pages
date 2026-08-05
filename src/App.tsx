@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { CheckCircle2, ChevronDown, Circle } from 'lucide-react';
+import {
+  Building2,
+  CheckCircle2,
+  ChevronDown,
+  Circle,
+  FileText,
+  RotateCcw,
+  ShieldCheck,
+} from 'lucide-react';
 import headerChapel from './assets/header-chapel.jpg';
 import crossSymbol from './assets/cross-celtic.png';
 import akafistKrest from './assets/akafist-krest.jpg';
@@ -52,6 +60,103 @@ const IntroText = () => (
   </div>
 );
 
+const SiteInformation = () => (
+  <section className="bg-[#f4efe7] px-6 py-10 text-gray-800" aria-labelledby="site-information-title">
+    <h2
+      id="site-information-title"
+      className="text-center text-[#8b3034] text-[25px] font-bold uppercase tracking-wide"
+    >
+      Информация об услугах и оплате
+    </h2>
+    <p className="mt-3 text-center text-[16px] leading-[1.6] text-gray-600">
+      Сайт проходит подготовку к подключению онлайн-платежей. Сейчас банковские
+      карты и платёжные данные на этой странице не принимаются.
+    </p>
+
+    <nav className="mt-7 grid grid-cols-2 gap-3" aria-label="Разделы с информацией">
+      {[
+        ['services', 'Услуги'],
+        ['payment', 'Оплата'],
+        ['refund', 'Возврат'],
+        ['details', 'Реквизиты'],
+      ].map(([id, label]) => (
+        <a
+          key={id}
+          href={`#${id}`}
+          className="min-h-[48px] rounded-xl border border-[#cdbdb0] bg-[#fcfaf5] px-3 py-3 text-center text-[16px] font-bold text-[#8b3034] flex items-center justify-center"
+        >
+          {label}
+        </a>
+      ))}
+    </nav>
+
+    <div className="mt-8 space-y-5">
+      <article id="services" className="rounded-2xl bg-[#fcfaf5] p-5 shadow-sm scroll-mt-4">
+        <div className="flex items-center gap-3 text-[#8b3034]">
+          <FileText className="h-6 w-6 shrink-0" />
+          <h3 className="text-[20px] font-bold">Оказываемые услуги</h3>
+        </div>
+        <p className="mt-3 text-[16px] leading-[1.65]">
+          На сайте можно подготовить церковную записку о здравии или об
+          упокоении и выбрать требу: Проскомидию, Обедню, Молебен, Панихиду,
+          Акафист или Сорокоуст. Итоговая сумма пожертвования показывается до
+          подтверждения формы и зависит от выбранной требы и количества имён.
+        </p>
+      </article>
+
+      <article id="payment" className="rounded-2xl bg-[#fcfaf5] p-5 shadow-sm scroll-mt-4">
+        <div className="flex items-center gap-3 text-[#8b3034]">
+          <ShieldCheck className="h-6 w-6 shrink-0" />
+          <h3 className="text-[20px] font-bold">Оплата и безопасность</h3>
+        </div>
+        <p className="mt-3 text-[16px] leading-[1.65]">
+          Онлайн-оплата пока не подключена. Сайт не запрашивает номер карты,
+          срок её действия или CVC/CVV-код. После заключения договора с
+          платёжным провайдером здесь будут опубликованы поддерживаемые способы
+          оплаты, правила проведения платежа и официальные логотипы платёжных
+          систем.
+        </p>
+      </article>
+
+      <article id="refund" className="rounded-2xl bg-[#fcfaf5] p-5 shadow-sm scroll-mt-4">
+        <div className="flex items-center gap-3 text-[#8b3034]">
+          <RotateCcw className="h-6 w-6 shrink-0" />
+          <h3 className="text-[20px] font-bold">Отмена и возврат</h3>
+        </div>
+        <p className="mt-3 text-[16px] leading-[1.65]">
+          До подключения платежей возврат через сайт не производится, поскольку
+          сайт не принимает деньги. Окончательный порядок отмены записки и
+          возврата платежа будет опубликован после его утверждения организацией
+          и согласования с платёжным провайдером.
+        </p>
+      </article>
+
+      <article id="details" className="rounded-2xl bg-[#fcfaf5] p-5 shadow-sm scroll-mt-4">
+        <div className="flex items-center gap-3 text-[#8b3034]">
+          <Building2 className="h-6 w-6 shrink-0" />
+          <h3 className="text-[20px] font-bold">Контакты и реквизиты</h3>
+        </div>
+        <dl className="mt-3 space-y-3 text-[16px] leading-[1.6]">
+          <div>
+            <dt className="font-bold">Техническая поддержка</dt>
+            <dd>
+              <a href="mailto:Alexbelskid@gmail.com" className="text-[#8b3034] underline">
+                Alexbelskid@gmail.com
+              </a>
+            </dd>
+          </div>
+          <div>
+            <dt className="font-bold">Юридические реквизиты организации</dt>
+            <dd className="text-gray-600">
+              Будут опубликованы после получения и проверки официальных данных.
+            </dd>
+          </div>
+        </dl>
+      </article>
+    </div>
+  </section>
+);
+
 const SuccessScreen = ({ onReset }: { onReset: () => void }) => (
   <div className="min-h-screen bg-[#8b97a2] font-sans flex justify-center w-full">
     <div className="w-full max-w-[480px] bg-[#8b97a2] shadow-2xl relative">
@@ -65,18 +170,19 @@ const SuccessScreen = ({ onReset }: { onReset: () => void }) => (
           <CheckCircle2 className="w-9 h-9 text-white" />
         </div>
         <h1 className="text-[#8b3034] text-[28px] font-bold uppercase tracking-wide mb-4">
-          Записка успешно подана
+          Черновик сформирован
         </h1>
         <p className="text-gray-700 text-[17px] leading-[1.6] max-w-[320px] mb-8">
-          Спасибо. Ваша записка принята. Если потребуется, с вами свяжутся по
-          указанным данным.
+          Это демонстрационная версия: данные не отправлены в храм, а оплата не
+          выполнялась. После подключения приёма записок здесь появится
+          подтверждение фактической отправки.
         </p>
         <button
           type="button"
           onClick={onReset}
           className="w-full max-w-[320px] bg-[#8b3034] text-white rounded-[16px] py-[18px] text-[20px] uppercase font-bold shadow-xl tracking-wide"
         >
-          Подать еще записку
+          Создать другой черновик
         </button>
       </div>
     </div>
@@ -164,9 +270,14 @@ export default function App() {
               className="absolute inset-0 w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-black/40" />
-            <h1 className="relative z-10 text-white text-[32px] font-bold uppercase tracking-widest text-center px-4">
-              Подать записку
-            </h1>
+            <div className="relative z-10 text-center px-4">
+              <div className="inline-flex rounded-full bg-[#fcfaf5] px-4 py-2 text-[14px] font-bold uppercase tracking-wide text-[#8b3034] shadow-md">
+                Демонстрационная версия
+              </div>
+              <h1 className="mt-4 text-white text-[32px] font-bold uppercase tracking-widest">
+                Макет церковной записки
+              </h1>
+            </div>
           </div>
 
           <LogoSeal />
@@ -373,8 +484,11 @@ export default function App() {
             onChange={e => setSenderName(e.target.value)}
           />
 
-          <div className="text-center italic text-white text-[20px] font-light">
-            Общая сумма пожертвования:
+          <div className="text-center text-white">
+            <div className="text-[20px] font-bold">Расчёт рекомендуемого пожертвования</div>
+            <div className="mt-2 text-[14px] leading-snug opacity-90">
+              Демонстрационный расчёт. Оплата на сайте не производится.
+            </div>
           </div>
 
           <div className="flex gap-[14px]">
@@ -402,11 +516,12 @@ export default function App() {
                 : 'bg-[#fcfaf5] text-[#8b3034]'
             }`}
           >
-            ПОДАТЬ ЗАПИСКУ
+            СФОРМИРОВАТЬ ЧЕРНОВИК
           </button>
         </div>
 
         <IntroText />
+        <SiteInformation />
       </div>
     </div>
   );

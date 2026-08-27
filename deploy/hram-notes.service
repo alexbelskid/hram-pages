@@ -1,0 +1,25 @@
+[Unit]
+Description=Hram Notes MVP
+After=network.target
+
+[Service]
+Type=simple
+User=hram-notes
+Group=hram-notes
+WorkingDirectory=/opt/hram-notes/current
+EnvironmentFile=/etc/hram-notes/hram.env
+ExecStart=/usr/bin/node --import tsx /opt/hram-notes/current/server/index.ts
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=20
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/hram-notes
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=false
+
+[Install]
+WantedBy=multi-user.target

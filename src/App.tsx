@@ -1,57 +1,81 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Building2,
   CheckCircle2,
   ChevronDown,
   Circle,
+  Clock3,
   FileText,
+  LogOut,
+  Printer,
+  RefreshCw,
   RotateCcw,
+  Search,
   ShieldCheck,
+  WalletCards,
 } from 'lucide-react';
 import headerChapel from './assets/header-chapel.jpg';
 import crossSymbol from './assets/cross-celtic.png';
 import akafistKrest from './assets/akafist-krest.jpg';
 import akafistMlekopitatelnitsa from './assets/akafist-mlekopitatelnitsa.jpg';
+import {
+  changeNoteStatus,
+  createNote,
+  getPrintDocument,
+  listNotes,
+  validateAdminSession,
+  type ChurchNote,
+  type NoteStatus,
+} from './api.ts';
+
+const TREBAS = ['Проскомидия', 'Обедня', 'Молебен', 'Панихида', 'Акафист', 'Сорокоуст'];
+const NOTE_PRICES: Record<string, number> = {
+  Проскомидия: 3,
+  Обедня: 8,
+  Молебен: 5,
+  Панихида: 5,
+  Акафист: 8,
+};
+
+const statusLabels: Record<NoteStatus, string> = {
+  pending_payment: 'Ожидает оплаты',
+  paid: 'Оплачена',
+  printing: 'Печатается',
+  completed: 'Обработана',
+  cancelled: 'Отменена',
+  refunded: 'Возвращена',
+};
 
 const LogoSeal = () => (
   <div className="flex items-center justify-center mb-8 mt-2 gap-[14px]">
-    <div className="w-[6px] h-[6px] rotate-45 bg-[#8b3034]"></div>
-    <div className="w-[6px] h-[6px] rotate-45 bg-[#8b3034]"></div>
-    <img
-      src={crossSymbol}
-      alt="Кельтский крест"
-      className="mx-2 w-[72px] h-[72px] object-contain"
-    />
-    <div className="w-[6px] h-[6px] rotate-45 bg-[#8b3034]"></div>
-    <div className="w-[6px] h-[6px] rotate-45 bg-[#8b3034]"></div>
+    <div className="w-[6px] h-[6px] rotate-45 bg-[#8b3034]" />
+    <div className="w-[6px] h-[6px] rotate-45 bg-[#8b3034]" />
+    <img src={crossSymbol} alt="Крест" className="mx-2 w-[72px] h-[72px] object-contain" />
+    <div className="w-[6px] h-[6px] rotate-45 bg-[#8b3034]" />
+    <div className="w-[6px] h-[6px] rotate-45 bg-[#8b3034]" />
   </div>
 );
 
 const IntroText = () => (
-  <div className="px-6 py-10 text-[15.5px] leading-[1.6] space-y-6 text-gray-800 bg-[#fcfaf5]">
+  <div className="bg-[#fcfaf5] px-6 py-10 text-[15.5px] leading-[1.6] text-gray-800 space-y-6">
     <div className="flex items-start gap-4">
-      <div className="w-[32px] h-[32px] rounded-full border-[2.5px] border-[#942e39] text-[#942e39] flex items-center justify-center font-bold text-xl shrink-0 mt-0.5">
+      <div className="mt-0.5 flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full border-[2.5px] border-[#942e39] text-xl font-bold text-[#942e39]">
         !
       </div>
-      <p className="text-[#942e39] font-medium text-[16px] leading-snug">
-        Обращаем ваше внимание, что за самоубийц не совершается церковное
-        поминовение об упокоении, кроме как по благословению архиерея.
+      <p className="text-[16px] font-medium leading-snug text-[#942e39]">
+        Обращаем ваше внимание, что за самоубийц не совершается церковное поминовение об упокоении, кроме как по благословению архиерея.
       </p>
     </div>
 
     <p>
-      Мы принимаем записки о здравии и об упокоении, а также вы можете заказать
-      сорокоуст, молебен, акафист, обедню и другие требы. Записки на пост
-      принимаются только во время Рождественского и Великого поста.
+      Мы принимаем записки о здравии и об упокоении, а также вы можете заказать сорокоуст, молебен, акафист, обедню и другие требы. Записки на пост принимаются только во время Рождественского и Великого поста.
     </p>
     <p>
-      Подавая записку за христианина католического вероисповедания либо за
-      некрещеного, обязательно указывайте это в записке рядом с именем.
+      Подавая записку за христианина католического вероисповедания либо за некрещеного, обязательно указывайте это в записке рядом с именем.
     </p>
 
-    <p className="mb-2">
-      В случае возникновения вопросов обращайтесь в службу технической
-      поддержки по электронной почте:
+    <p>
+      В случае возникновения вопросов обращайтесь в службу технической поддержки по электронной почте:
       <br />
       <a href="mailto:Alexbelskid@gmail.com" className="text-[#942e39]">
         Alexbelskid@gmail.com
@@ -62,15 +86,11 @@ const IntroText = () => (
 
 const SiteInformation = () => (
   <section className="bg-[#f4efe7] px-6 py-10 text-gray-800" aria-labelledby="site-information-title">
-    <h2
-      id="site-information-title"
-      className="text-center text-[#8b3034] text-[25px] font-bold uppercase tracking-wide"
-    >
+    <h2 id="site-information-title" className="text-center text-[25px] font-bold uppercase tracking-wide text-[#8b3034]">
       Информация об услугах и оплате
     </h2>
     <p className="mt-3 text-center text-[16px] leading-[1.6] text-gray-600">
-      Сайт проходит подготовку к подключению онлайн-платежей. Сейчас банковские
-      карты и платёжные данные на этой странице не принимаются.
+      Сайт проходит подготовку к подключению онлайн-платежей. Сейчас банковские карты и платёжные данные на этой странице не принимаются.
     </p>
 
     <nav className="mt-7 grid grid-cols-2 gap-3" aria-label="Разделы с информацией">
@@ -83,7 +103,7 @@ const SiteInformation = () => (
         <a
           key={id}
           href={`#${id}`}
-          className="min-h-[48px] rounded-xl border border-[#cdbdb0] bg-[#fcfaf5] px-3 py-3 text-center text-[16px] font-bold text-[#8b3034] flex items-center justify-center"
+          className="flex min-h-[48px] items-center justify-center rounded-xl border border-[#cdbdb0] bg-[#fcfaf5] px-3 py-3 text-center text-[16px] font-bold text-[#8b3034]"
         >
           {label}
         </a>
@@ -91,47 +111,37 @@ const SiteInformation = () => (
     </nav>
 
     <div className="mt-8 space-y-5">
-      <article id="services" className="rounded-2xl bg-[#fcfaf5] p-5 shadow-sm scroll-mt-4">
+      <article id="services" className="scroll-mt-4 rounded-2xl bg-[#fcfaf5] p-5 shadow-sm">
         <div className="flex items-center gap-3 text-[#8b3034]">
           <FileText className="h-6 w-6 shrink-0" />
           <h3 className="text-[20px] font-bold">Оказываемые услуги</h3>
         </div>
         <p className="mt-3 text-[16px] leading-[1.65]">
-          На сайте можно подготовить церковную записку о здравии или об
-          упокоении и выбрать требу: Проскомидию, Обедню, Молебен, Панихиду,
-          Акафист или Сорокоуст. Итоговая сумма пожертвования показывается до
-          подтверждения формы и зависит от выбранной требы и количества имён.
+          На сайте можно подготовить церковную записку о здравии или об упокоении и выбрать требу: Проскомидию, Обедню, Молебен, Панихиду, Акафист или Сорокоуст. Итоговая сумма пожертвования показывается до подтверждения формы и зависит от выбранной требы и количества имён.
         </p>
       </article>
 
-      <article id="payment" className="rounded-2xl bg-[#fcfaf5] p-5 shadow-sm scroll-mt-4">
+      <article id="payment" className="scroll-mt-4 rounded-2xl bg-[#fcfaf5] p-5 shadow-sm">
         <div className="flex items-center gap-3 text-[#8b3034]">
           <ShieldCheck className="h-6 w-6 shrink-0" />
           <h3 className="text-[20px] font-bold">Оплата и безопасность</h3>
         </div>
         <p className="mt-3 text-[16px] leading-[1.65]">
-          Онлайн-оплата пока не подключена. Сайт не запрашивает номер карты,
-          срок её действия или CVC/CVV-код. После заключения договора с
-          платёжным провайдером здесь будут опубликованы поддерживаемые способы
-          оплаты, правила проведения платежа и официальные логотипы платёжных
-          систем.
+          Онлайн-оплата пока не подключена. Сайт не запрашивает номер карты, срок её действия или CVC/CVV-код. После заключения договора с платёжным провайдером здесь будут опубликованы поддерживаемые способы оплаты, правила проведения платежа и официальные логотипы платёжных систем.
         </p>
       </article>
 
-      <article id="refund" className="rounded-2xl bg-[#fcfaf5] p-5 shadow-sm scroll-mt-4">
+      <article id="refund" className="scroll-mt-4 rounded-2xl bg-[#fcfaf5] p-5 shadow-sm">
         <div className="flex items-center gap-3 text-[#8b3034]">
           <RotateCcw className="h-6 w-6 shrink-0" />
           <h3 className="text-[20px] font-bold">Отмена и возврат</h3>
         </div>
         <p className="mt-3 text-[16px] leading-[1.65]">
-          До подключения платежей возврат через сайт не производится, поскольку
-          сайт не принимает деньги. Окончательный порядок отмены записки и
-          возврата платежа будет опубликован после его утверждения организацией
-          и согласования с платёжным провайдером.
+          До подключения платежей возврат через сайт не производится, поскольку сайт не принимает деньги. Окончательный порядок отмены записки и возврата платежа будет опубликован после его утверждения организацией и согласования с платёжным провайдером.
         </p>
       </article>
 
-      <article id="details" className="rounded-2xl bg-[#fcfaf5] p-5 shadow-sm scroll-mt-4">
+      <article id="details" className="scroll-mt-4 rounded-2xl bg-[#fcfaf5] p-5 shadow-sm">
         <div className="flex items-center gap-3 text-[#8b3034]">
           <Building2 className="h-6 w-6 shrink-0" />
           <h3 className="text-[20px] font-bold">Контакты и реквизиты</h3>
@@ -147,9 +157,7 @@ const SiteInformation = () => (
           </div>
           <div>
             <dt className="font-bold">Юридические реквизиты организации</dt>
-            <dd className="text-gray-600">
-              Будут опубликованы после получения и проверки официальных данных.
-            </dd>
+            <dd className="text-gray-600">Будут опубликованы после получения и проверки официальных данных.</dd>
           </div>
         </dl>
       </article>
@@ -157,372 +165,398 @@ const SiteInformation = () => (
   </section>
 );
 
-const SuccessScreen = ({ onReset }: { onReset: () => void }) => (
-  <div className="min-h-screen bg-[#8b97a2] font-sans flex justify-center w-full">
-    <div className="w-full max-w-[480px] bg-[#8b97a2] shadow-2xl relative">
-      <div className="bg-[#fcfaf5] min-h-screen px-6 py-12 flex flex-col items-center justify-center text-center">
-        <img
-          src={crossSymbol}
-          alt="Кельтский крест"
-          className="w-[84px] h-[84px] object-contain mb-6"
-        />
-        <div className="w-16 h-16 rounded-full bg-[#8b3034] flex items-center justify-center shadow-md mb-6">
-          <CheckCircle2 className="w-9 h-9 text-white" />
-        </div>
-        <h1 className="text-[#8b3034] text-[28px] font-bold uppercase tracking-wide mb-4">
-          Черновик сформирован
-        </h1>
-        <p className="text-gray-700 text-[17px] leading-[1.6] max-w-[320px] mb-8">
-          Это демонстрационная версия: данные не отправлены в храм, а оплата не
-          выполнялась. После подключения приёма записок здесь появится
-          подтверждение фактической отправки.
-        </p>
-        <button
-          type="button"
-          onClick={onReset}
-          className="w-full max-w-[320px] bg-[#8b3034] text-white rounded-[16px] py-[18px] text-[20px] uppercase font-bold shadow-xl tracking-wide"
-        >
-          Создать другой черновик
-        </button>
-      </div>
-    </div>
-  </div>
-);
+function newIdempotencyKey() {
+  return `note-${crypto.randomUUID()}`;
+}
 
-export default function App() {
-  const TREBAS = [
-    'Проскомидия',
-    'Обедня',
-    'Молебен',
-    'Панихида',
-    'Акафист',
-    'Сорокоуст',
-  ];
-
-  const [treba, setTreba] = useState<string>('Выберите требу');
-  const [names, setNames] = useState<string[]>(Array(10).fill(''));
+function PublicForm({ onOpenAdmin }: { onOpenAdmin: () => void }) {
+  const [treba, setTreba] = useState('Выберите требу');
+  const [names, setNames] = useState<string[]>(Array(4).fill(''));
   const [type, setType] = useState<'zdravie' | 'upokoenie'>('zdravie');
-  const [duration, setDuration] = useState<string>('40 дней');
-  const [akafistTarget, setAkafistTarget] = useState<string>('Христу');
-  const [senderName, setSenderName] = useState<string>('');
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [duration, setDuration] = useState('40 дней');
+  const [akafistTarget, setAkafistTarget] = useState('Христу');
+  const [senderName, setSenderName] = useState('');
+  const [idempotencyKey, setIdempotencyKey] = useState(newIdempotencyKey);
+  const [created, setCreated] = useState<ChurchNote | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
-  const isTrebaSelected = treba !== 'Выберите требу';
-  const showDuration = treba === 'Сорокоуст';
-  const showAkafistTargets = treba === 'Акафист';
-  const canChooseUpokoenie = !['Молебен', 'Акафист'].includes(treba);
-  const filledNamesCount = names.filter(name => name.trim() !== '').length;
+  const filledNames = names.map(name => name.trim()).filter(Boolean);
+  const selected = treba !== 'Выберите требу';
+  const notePrice = NOTE_PRICES[treba] ?? 0;
+  const amount = treba === 'Сорокоуст'
+    ? filledNames.length * 10
+    : notePrice > 0 && filledNames.length > 0
+      ? Math.ceil(filledNames.length / 12) * notePrice
+      : 0;
 
-  const perNotePrices: Record<string, number> = {
-    Проскомидия: 3,
-    Обедня: 8,
-    Молебен: 5,
-    Панихида: 5,
-    Акафист: 8,
-  };
-
-  const notePrice = perNotePrices[treba] ?? 0;
-  const donationAmount =
-    treba === 'Сорокоуст' && filledNamesCount > 0
-      ? filledNamesCount * 10
-      : notePrice > 0 && filledNamesCount > 0
-        ? Math.ceil(filledNamesCount / 12) * notePrice
-        : 0;
-
-  const donationHint =
-    !isTrebaSelected
-      ? 'Выберите требу, чтобы увидеть сумму пожертвования.'
-      : treba === 'Сорокоуст'
-        ? 'Для Сорокоуста одно имя стоит 10 BYN.'
-        : notePrice > 0
-          ? `Для требы «${treba}» одна записка до 12 имен стоит ${notePrice} BYN. Если имен больше 12, считается следующая записка и сумма увеличивается еще на ${notePrice} BYN.`
-          : 'Выберите требу, чтобы увидеть сумму пожертвования.';
-
-  const handleSubmit = () => {
-    if (!isTrebaSelected || filledNamesCount === 0 || senderName.trim() === '') {
-      return;
-    }
-    setIsSubmitted(true);
-  };
-
-  const handleReset = () => {
+  function reset() {
     setTreba('Выберите требу');
-    setNames(Array(10).fill(''));
+    setNames(Array(4).fill(''));
     setType('zdravie');
     setDuration('40 дней');
     setAkafistTarget('Христу');
     setSenderName('');
-    setIsSubmitted(false);
-  };
+    setCreated(null);
+    setError('');
+    setIdempotencyKey(newIdempotencyKey());
+  }
 
-  if (isSubmitted) {
-    return <SuccessScreen onReset={handleReset} />;
+  async function submit() {
+    if (!selected || filledNames.length === 0 || !senderName.trim()) return;
+    setSubmitting(true);
+    setError('');
+    try {
+      const result = await createNote({
+        treba,
+        type,
+        names: filledNames,
+        senderName: senderName.trim(),
+        duration: treba === 'Сорокоуст' ? duration : undefined,
+        akafistTarget: treba === 'Акафист' ? akafistTarget : undefined,
+      }, idempotencyKey);
+      setCreated(result.note);
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : 'Не удалось создать записку');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (created) {
+    return (
+      <main className="min-h-screen bg-[#8b97a2] flex justify-center p-4 md:p-10">
+        <section className="w-full max-w-[540px] rounded-[28px] bg-[#fcfaf5] px-7 py-12 text-center shadow-2xl">
+          <img src={crossSymbol} alt="Крест" className="mx-auto h-20 w-20 object-contain" />
+          <div className="mx-auto mt-6 flex h-16 w-16 items-center justify-center rounded-full bg-[#8b3034] text-white">
+            <CheckCircle2 className="h-9 w-9" />
+          </div>
+          <h1 className="mt-6 text-[28px] font-bold uppercase text-[#8b3034]">Записка подготовлена</h1>
+          <p className="mt-4 text-[17px] leading-relaxed text-gray-700">
+            Номер: <strong>{created.id}</strong>. Рекомендуемая сумма пожертвования: {created.amount} {created.currency}.
+          </p>
+          <div className="mt-6 rounded-2xl bg-[#f1ece3] p-4 text-left text-[15px] text-gray-700">
+            <strong>Следующий шаг:</strong> оплата пока не подключена, поэтому записка сохранена в тестовой очереди и не считается оплаченной. После подключения платёжной системы здесь появится безопасный переход к оплате.
+          </div>
+          <button onClick={reset} className="mt-8 w-full rounded-2xl bg-[#8b3034] py-4 text-[18px] font-bold uppercase text-white">
+            Создать ещё записку
+          </button>
+          <button onClick={onOpenAdmin} className="mt-3 w-full rounded-2xl border border-[#8b3034] py-3 text-[16px] font-bold text-[#8b3034]">
+            Открыть админку
+          </button>
+        </section>
+      </main>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-[#8b97a2] font-sans flex justify-center w-full">
-      <div className="w-full max-w-[480px] bg-[#8b97a2] shadow-2xl relative">
-        <div className="bg-[#fcfaf5] rounded-b-[32px] pb-[44px] shadow-sm">
-          <div className="w-full h-[240px] relative bg-gray-200 flex items-center justify-center">
-            <img
-              src={headerChapel}
-              alt="Часовня внутри храма"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-black/40" />
-            <div className="relative z-10 text-center px-4">
-              <div className="inline-flex rounded-full bg-[#fcfaf5] px-4 py-2 text-[14px] font-bold uppercase tracking-wide text-[#8b3034] shadow-md">
-                Демонстрационная версия
-              </div>
-              <h1 className="mt-4 text-white text-[32px] font-bold uppercase tracking-widest">
-                Макет церковной записки
-              </h1>
+    <main className="min-h-screen bg-[#8b97a2] font-sans">
+      <div className="mx-auto w-full max-w-[540px] shadow-2xl">
+        <section className="rounded-b-[32px] bg-[#fcfaf5] pb-11">
+          <header className="relative flex h-[240px] items-center justify-center overflow-hidden">
+            <img src={headerChapel} alt="Часовня внутри храма" className="absolute inset-0 h-full w-full object-cover" />
+            <div className="absolute inset-0 bg-black/45" />
+            <div className="relative z-10 px-5 text-center text-white">
+              <h1 className="text-[32px] font-bold uppercase tracking-widest">Подать записку</h1>
+              <p className="mt-3 text-[15px]">Выберите службу, укажите имена и проверьте сумму пожертвования</p>
             </div>
-          </div>
+          </header>
 
           <LogoSeal />
-
-          <div className="px-6 mt-2">
-            <div className="relative mb-10">
+          <div className="px-6">
+            <div className="relative mb-7">
+              <label htmlFor="treba" className="sr-only">Выберите требу</label>
               <select
+                id="treba"
                 value={treba}
-                onChange={e => {
-                  const value = e.target.value;
+                onChange={event => {
+                  const value = event.target.value;
                   setTreba(value);
-
-                  if (value === 'Панихида') {
-                    setType('upokoenie');
-                  } else if (value === 'Молебен' || value === 'Акафист') {
-                    setType('zdravie');
-                  }
-                  if (value !== 'Сорокоуст') {
-                    setDuration('40 дней');
-                  }
-                  if (value !== 'Акафист') {
-                    setAkafistTarget('Христу');
-                  }
+                  if (value === 'Панихида') setType('upokoenie');
+                  if (value === 'Молебен' || value === 'Акафист') setType('zdravie');
                 }}
-                className="opacity-0 absolute inset-0 w-full h-full cursor-pointer z-10"
+                className="w-full appearance-none rounded-full border-[1.5px] border-[#8b3034] bg-[#fcfaf5] px-6 py-4 text-center text-[20px] font-bold uppercase text-[#8b3034] outline-none"
               >
-                <option value="Выберите требу" disabled>
-                  Выберите требу
-                </option>
-                {TREBAS.map(t => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
+                <option disabled>Выберите требу</option>
+                {TREBAS.map(item => <option key={item}>{item}</option>)}
               </select>
-
-              <div className="border-[1.5px] border-[#8b3034] text-[#8b3034] rounded-full py-[14px] px-6 flex justify-center items-center bg-[#fcfaf5] pointer-events-none relative shadow-sm">
-                <span className="text-[22px] uppercase font-bold tracking-tight">
-                  {treba === 'Выберите требу' ? 'ВЫБЕРИТЕ ТРЕБУ' : treba}
-                </span>
-                <div className="absolute right-[14px] w-[34px] h-[34px] rounded-full border-[1.5px] border-[#8b3034] flex items-center justify-center bg-[#fcfaf5]">
-                  <ChevronDown className="w-6 h-6 stroke-[2.5]" />
-                </div>
-              </div>
+              <ChevronDown className="pointer-events-none absolute right-5 top-4 h-7 w-7 text-[#8b3034]" />
             </div>
 
-            <div className="mb-10 space-y-[14px]">
-              {isTrebaSelected && (
-                <>
-                  <div className="flex gap-3 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => setType('zdravie')}
-                      className={`flex justify-center items-center py-[16px] rounded-[14px] border-2 transition-all ${
-                        treba === 'Панихида' || !canChooseUpokoenie ? 'w-full' : 'flex-1'
-                      } ${
-                        type === 'zdravie'
-                          ? 'bg-[#d24c58] border-[#d24c58] text-white shadow-md font-medium'
-                          : 'bg-[#fcfaf5] border-[#d24c58] text-[#d24c58] font-medium'
-                      }`}
-                    >
-                      {type === 'zdravie' ? (
-                        <CheckCircle2 className="w-6 h-6" />
-                      ) : (
-                        <Circle className="w-6 h-6" />
-                      )}
-                      <span className="ml-[8px] text-[17px]">о здравии</span>
+            {selected && (
+              <div className="mb-7 space-y-5">
+                <div className="flex gap-3">
+                  {treba !== 'Панихида' && (
+                    <button type="button" onClick={() => setType('zdravie')} className={`flex flex-1 items-center justify-center rounded-2xl border-2 py-4 ${type === 'zdravie' ? 'border-[#d24c58] bg-[#d24c58] text-white' : 'border-[#d24c58] text-[#d24c58]'}`}>
+                      {type === 'zdravie' ? <CheckCircle2 className="mr-2" /> : <Circle className="mr-2" />}о здравии
                     </button>
-
-                    {canChooseUpokoenie && (
-                      <button
-                        type="button"
-                        onClick={() => setType('upokoenie')}
-                        className={`flex justify-center items-center py-[16px] rounded-[14px] border-2 transition-all ${
-                          treba === 'Панихида' ? 'w-full' : 'flex-1'
-                        } ${
-                          type === 'upokoenie'
-                            ? 'bg-[#40434f] border-[#40434f] text-white shadow-md font-medium'
-                            : 'bg-[#fcfaf5] border-[#40434f] text-[#40434f] font-medium'
-                        }`}
-                      >
-                        {type === 'upokoenie' ? (
-                          <CheckCircle2 className="w-6 h-6" />
-                        ) : (
-                          <Circle className="w-6 h-6" />
-                        )}
-                        <span className="ml-[8px] text-[17px]">об упокоении</span>
-                      </button>
-                    )}
-                  </div>
-
-                  {showDuration && (
-                    <div className="flex flex-wrap gap-3 pt-1">
-                      {['40 дней'].map(d => (
-                        <button
-                          type="button"
-                          key={d}
-                          onClick={() => setDuration(d)}
-                          className={`flex items-center flex-1 min-w-[100px] justify-center py-[16px] rounded-[14px] border-[1.5px] transition-all ${
-                            duration === d
-                              ? 'bg-white border-[#8faad9] text-[#333] shadow-sm font-medium'
-                              : 'bg-[#fcfaf5] border-[#dfd6cb] text-gray-400 font-medium'
-                          }`}
-                        >
-                          {duration === d ? (
-                            <CheckCircle2 className="w-6 h-6 mr-2 text-[#8faad9] stroke-[2.5]" />
-                          ) : (
-                            <Circle className="w-6 h-6 mr-2 text-[#dfd6cb]" />
-                          )}
-                          <span className="text-[17px]">{d}</span>
-                        </button>
-                      ))}
-                    </div>
                   )}
-
-                  {showAkafistTargets && (
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-6 pt-2">
-                      {[
-                        {
-                          value: 'Христу',
-                          label: 'Честному и Животворящему Кресту Господню',
-                          image: akafistKrest,
-                        },
-                        {
-                          value: 'Млекопитательница',
-                          label: 'Божией Матери «Млекопитательница»',
-                          image: akafistMlekopitatelnitsa,
-                        },
-                      ].map(option => {
-                        const selected = akafistTarget === option.value;
-
-                        return (
-                          <button
-                            key={option.value}
-                            type="button"
-                            onClick={() => setAkafistTarget(option.value)}
-                            className="flex flex-col items-center text-center"
-                          >
-                            <div className="relative">
-                              <div className="w-[132px] h-[132px] rounded-full border-[3px] border-[#8b3034] bg-white overflow-hidden shadow-sm">
-                                <img
-                                  src={option.image}
-                                  alt={option.label}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                              <div className="absolute left-0 bottom-1 w-9 h-9 rounded-full bg-white border-2 border-[#8b3034] flex items-center justify-center shadow-sm">
-                                {selected ? (
-                                  <CheckCircle2 className="w-7 h-7 text-[#8b3034] fill-white" />
-                                ) : (
-                                  <Circle className="w-6 h-6 text-[#8b3034]" />
-                                )}
-                              </div>
-                            </div>
-                            <span className="mt-3 text-[14px] leading-[1.3] text-[#8b3034] font-medium max-w-[160px]">
-                              {option.label}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
+                  {!['Молебен', 'Акафист'].includes(treba) && (
+                    <button type="button" onClick={() => setType('upokoenie')} className={`flex flex-1 items-center justify-center rounded-2xl border-2 py-4 ${type === 'upokoenie' ? 'border-[#40434f] bg-[#40434f] text-white' : 'border-[#40434f] text-[#40434f]'}`}>
+                      {type === 'upokoenie' ? <CheckCircle2 className="mr-2" /> : <Circle className="mr-2" />}об упокоении
+                    </button>
                   )}
-                </>
-              )}
-            </div>
-
-            <div className="space-y-[18px]">
-              {names.map((name, idx) => (
-                <div key={idx} className="flex gap-3 items-end">
-                  <span className="text-[#8b3034] font-medium text-[19px] min-w-[24px] text-right pb-[2px]">
-                    {idx + 1}.
-                  </span>
-                  <input
-                    className="flex-1 pb-[6px] px-1 border-b-[1.5px] border-[#8b3034] bg-transparent outline-none italic placeholder:text-gray-400 text-gray-700 text-[17px]"
-                    placeholder="Добавьте ИМЯ в родительном падеже"
-                    value={name}
-                    onChange={e => {
-                      const arr = [...names];
-                      arr[idx] = e.target.value;
-                      setNames(arr);
-                    }}
-                  />
                 </div>
+
+                {treba === 'Сорокоуст' && (
+                  <button type="button" onClick={() => setDuration('40 дней')} className="w-full rounded-2xl border border-[#8faad9] bg-white py-4 font-bold text-gray-700">
+                    <CheckCircle2 className="mr-2 inline h-5 w-5 text-[#8faad9]" />{duration}
+                  </button>
+                )}
+
+                {treba === 'Акафист' && (
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { value: 'Христу', label: 'Честному Кресту Господню', image: akafistKrest },
+                      { value: 'Млекопитательница', label: 'Божией Матери «Млекопитательница»', image: akafistMlekopitatelnitsa },
+                    ].map(option => (
+                      <button type="button" key={option.value} onClick={() => setAkafistTarget(option.value)} className="text-center">
+                        <img src={option.image} alt={option.label} className={`mx-auto h-28 w-28 rounded-full border-4 object-cover ${akafistTarget === option.value ? 'border-[#8b3034]' : 'border-transparent'}`} />
+                        <span className="mt-2 block text-[14px] text-[#8b3034]">{option.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              {names.map((name, index) => (
+                <label key={index} className="flex items-end gap-3">
+                  <span className="min-w-6 text-right text-[18px] text-[#8b3034]">{index + 1}.</span>
+                  <span className="sr-only">Имя {index + 1} в родительном падеже</span>
+                  <input value={name} onChange={event => setNames(current => current.map((item, itemIndex) => itemIndex === index ? event.target.value : item))} placeholder="Имя в родительном падеже" className="flex-1 border-b border-[#8b3034] bg-transparent px-1 py-2 text-[17px] outline-none" />
+                </label>
               ))}
             </div>
-
-            <div className="mt-10 flex justify-center">
-              <button
-                type="button"
-                onClick={() => setNames([...names, ''])}
-                className="bg-[#c2b6a5] text-white px-8 py-[14px] rounded-xl font-medium text-[18px] shadow-sm tracking-wide"
-              >
-                Добавить еще имя
-              </button>
-            </div>
+            <button type="button" onClick={() => setNames(current => [...current, ''])} className="mx-auto mt-7 block rounded-xl bg-[#c2b6a5] px-7 py-3 font-bold text-white">Добавить ещё имя</button>
           </div>
-        </div>
+        </section>
 
-        <div className="px-6 py-10 flex flex-col gap-10">
-          <input
-            className="w-full bg-[#fdfaf5] rounded-[14px] px-5 py-[18px] italic text-[#666] outline-none text-[18px] placeholder:text-gray-400 font-medium shadow-sm"
-            placeholder="Ваше имя"
-            value={senderName}
-            onChange={e => setSenderName(e.target.value)}
-          />
-
+        <section className="space-y-7 px-6 py-9">
+          <label className="block">
+            <span className="mb-2 block text-[14px] font-bold uppercase text-white">Имя отправителя</span>
+            <input value={senderName} onChange={event => setSenderName(event.target.value)} placeholder="Ваше имя" className="w-full rounded-2xl bg-[#fcfaf5] px-5 py-4 text-[18px] outline-none" />
+          </label>
           <div className="text-center text-white">
-            <div className="text-[20px] font-bold">Расчёт рекомендуемого пожертвования</div>
-            <div className="mt-2 text-[14px] leading-snug opacity-90">
-              Демонстрационный расчёт. Оплата на сайте не производится.
+            <div className="text-[19px] font-bold">Рекомендуемая сумма пожертвования</div>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              <div className="rounded-2xl bg-[#a2aab2] py-4 text-[28px] font-bold text-[#697481]">{amount}</div>
+              <div className="rounded-2xl bg-[#fcfaf5] py-4 text-[28px] font-bold text-[#8b3034]">BYN</div>
             </div>
           </div>
-
-          <div className="flex gap-[14px]">
-            <div className="flex-1 bg-[#a2aab2] text-[#697481] rounded-[14px] py-[16px] text-center font-bold text-[28px] shadow-inner select-none tracking-wider">
-              {donationAmount}
-            </div>
-            <div className="flex-1 bg-[#fcfaf5] text-[#8b3034] rounded-[14px] py-[16px] text-center font-bold text-[28px] shadow-sm select-none tracking-wider">
-              BYN
-            </div>
-          </div>
-
-          {isTrebaSelected && (
-            <p className="text-[#fcfaf5] text-[14px] leading-snug text-center -mt-4 px-1">
-              {donationHint}
-            </p>
-          )}
-
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={!isTrebaSelected || filledNamesCount === 0 || senderName.trim() === ''}
-            className={`w-full rounded-[16px] py-[22px] text-[24px] uppercase font-bold shadow-xl flex justify-center items-center tracking-wide transition-opacity ${
-              !isTrebaSelected || filledNamesCount === 0 || senderName.trim() === ''
-                ? 'bg-[#d8d2ca] text-[#8e877f] cursor-not-allowed opacity-70'
-                : 'bg-[#fcfaf5] text-[#8b3034]'
-            }`}
-          >
-            СФОРМИРОВАТЬ ЧЕРНОВИК
+          {error && <p role="alert" className="rounded-xl bg-red-100 p-3 text-center text-red-800">{error}</p>}
+          <button onClick={submit} disabled={!selected || !filledNames.length || !senderName.trim() || submitting} className="w-full rounded-2xl bg-[#fcfaf5] py-5 text-[21px] font-bold uppercase text-[#8b3034] disabled:cursor-not-allowed disabled:opacity-50">
+            {submitting ? 'Создаём…' : 'Продолжить'}
           </button>
-        </div>
+          <button onClick={onOpenAdmin} className="w-full py-2 text-center text-[15px] font-bold text-white underline">Вход для администратора</button>
+        </section>
+
+        <section className="bg-[#fcfaf5] px-6 py-9 text-[15px] leading-relaxed text-gray-700">
+          <div className="flex items-start gap-3 rounded-2xl bg-[#f4efe7] p-4">
+            <ShieldCheck className="mt-1 h-6 w-6 shrink-0 text-[#8b3034]" />
+            <p><strong>Оплата ещё не подключена.</strong> Сейчас можно проверить форму и подготовить записку. Банковские данные на этой странице не запрашиваются.</p>
+          </div>
+        </section>
 
         <IntroText />
         <SiteInformation />
       </div>
-    </div>
+    </main>
   );
+}
+
+function Login({ onLogin, onCancel }: { onLogin: (token: string) => void; onCancel: () => void }) {
+  const [token, setToken] = useState('');
+  const [error, setError] = useState('');
+  const [checking, setChecking] = useState(false);
+
+  async function login() {
+    setChecking(true);
+    setError('');
+    try {
+      await validateAdminSession(token);
+      onLogin(token);
+    } catch {
+      setError('Неверный ключ доступа. Проверьте его и попробуйте ещё раз.');
+    } finally {
+      setChecking(false);
+    }
+  }
+
+  return (
+    <main className="min-h-screen bg-[#edf0f2] p-5 flex items-center justify-center">
+      <section className="w-full max-w-md rounded-3xl bg-white p-7 shadow-xl">
+        <ShieldCheck className="h-10 w-10 text-[#8b3034]" />
+        <h1 className="mt-4 text-2xl font-bold text-gray-900">Админ-панель</h1>
+        <p className="mt-2 text-gray-600">Введите локальный ключ доступа. В рабочей версии здесь будет отдельная защищённая учётная запись.</p>
+        <label className="mt-6 block">
+          <span className="text-sm font-bold text-gray-700">Ключ доступа</span>
+          <input type="password" value={token} onChange={event => setToken(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') void login(); }} className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-[#8b3034]" />
+        </label>
+        {error && <p role="alert" className="mt-3 rounded-xl bg-red-50 p-3 text-sm text-red-800">{error}</p>}
+        <button onClick={() => void login()} disabled={!token || checking} className="mt-5 w-full rounded-xl bg-[#8b3034] py-3 font-bold text-white disabled:opacity-40">{checking ? 'Проверяем…' : 'Войти'}</button>
+        <button onClick={onCancel} className="mt-3 w-full py-2 text-gray-600">Вернуться к форме</button>
+      </section>
+    </main>
+  );
+}
+
+function AdminPanel({ token, onLogout, onPublic }: { token: string; onLogout: () => void; onPublic: () => void }) {
+  const [notes, setNotes] = useState<ChurchNote[]>([]);
+  const [filter, setFilter] = useState('');
+  const [query, setQuery] = useState('');
+  const [selected, setSelected] = useState<ChurchNote | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  async function refresh() {
+    setLoading(true);
+    setError('');
+    try {
+      const result = await listNotes(token, filter || undefined);
+      setNotes(result.notes);
+      if (selected) setSelected(result.notes.find(note => note.id === selected.id) ?? null);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : 'Ошибка загрузки');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { void refresh(); }, [filter]);
+  const visible = useMemo(() => notes.filter(note => `${note.id} ${note.senderName} ${note.treba} ${note.names.join(' ')}`.toLowerCase().includes(query.toLowerCase())), [notes, query]);
+  const counts = useMemo(() => ({ all: notes.length, paid: notes.filter(note => note.status === 'paid').length, pending: notes.filter(note => note.status === 'pending_payment').length }), [notes]);
+
+  async function updateStatus(note: ChurchNote, status: NoteStatus) {
+    try {
+      const result = await changeNoteStatus(token, note, status);
+      setSelected(result.note);
+      await refresh();
+    } catch (updateError) {
+      setError(updateError instanceof Error ? updateError.message : 'Ошибка статуса');
+    }
+  }
+
+  async function printNote(note: ChurchNote) {
+    try {
+      const result = await getPrintDocument(token, note);
+      setSelected(result.note);
+      setNotes(current => current.map(item => item.id === result.note.id ? result.note : item));
+      const windowRef = window.open('', '_blank', 'width=720,height=900');
+      if (!windowRef) throw new Error('Браузер заблокировал окно печати');
+      const escaped = result.printDocument.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+      windowRef.document.write(`<html><head><title>${note.id}</title><style>body{font-family:Georgia,serif;padding:48px;white-space:pre-wrap;font-size:20px;line-height:1.6}</style></head><body>${escaped}<script>window.print()</script></body></html>`);
+      windowRef.document.close();
+    } catch (printError) {
+      setError(printError instanceof Error ? printError.message : 'Ошибка печати');
+    }
+  }
+
+  return (
+    <main className="min-h-screen bg-[#edf0f2] text-gray-900">
+      <header className="border-b border-gray-200 bg-white px-5 py-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+          <div>
+            <div className="text-sm font-bold uppercase tracking-wider text-[#8b3034]">Hram Admin</div>
+            <h1 className="text-xl font-bold">Очередь церковных записок</h1>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={onPublic} className="rounded-xl border border-gray-300 px-3 py-2 text-sm font-bold">Форма</button>
+            <button onClick={onLogout} className="rounded-xl bg-gray-900 px-3 py-2 text-sm font-bold text-white"><LogOut className="mr-2 inline h-4 w-4" />Выйти</button>
+          </div>
+        </div>
+      </header>
+
+      <div className="mx-auto max-w-7xl p-5">
+        <section className="grid gap-4 sm:grid-cols-3">
+          {[
+            ['Всего', counts.all, FileText],
+            ['Ожидают оплаты', counts.pending, Clock3],
+            ['Оплачены', counts.paid, WalletCards],
+          ].map(([label, value, Icon]) => (
+            <div key={String(label)} className="rounded-2xl bg-white p-5 shadow-sm">
+              <Icon className="h-6 w-6 text-[#8b3034]" />
+              <div className="mt-3 text-3xl font-bold">{String(value)}</div>
+              <div className="text-sm text-gray-600">{String(label)}</div>
+            </div>
+          ))}
+        </section>
+
+        <section className="mt-5 rounded-2xl bg-white p-4 shadow-sm">
+          <div className="flex flex-col gap-3 md:flex-row">
+            <label className="relative flex-1">
+              <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+              <input value={query} onChange={event => setQuery(event.target.value)} placeholder="Поиск по имени, требе или номеру" className="w-full rounded-xl border border-gray-200 py-3 pl-10 pr-3 outline-none focus:border-[#8b3034]" />
+            </label>
+            <select value={filter} onChange={event => setFilter(event.target.value)} className="rounded-xl border border-gray-200 px-4 py-3">
+              <option value="">Все статусы</option>
+              {Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+            </select>
+            <button onClick={() => void refresh()} className="rounded-xl border border-gray-200 px-4 py-3 font-bold"><RefreshCw className="mr-2 inline h-4 w-4" />Обновить</button>
+          </div>
+        </section>
+
+        {error && <p role="alert" className="mt-4 rounded-xl bg-red-100 p-3 text-red-800">{error}</p>}
+
+        <section className="mt-5 grid gap-5 lg:grid-cols-[1fr_420px]">
+          <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
+            <div className="border-b border-gray-100 px-5 py-4 font-bold">Записки</div>
+            {loading ? <p className="p-5 text-gray-500">Загрузка…</p> : visible.length === 0 ? <p className="p-5 text-gray-500">Записок пока нет</p> : visible.map(note => (
+              <button key={note.id} onClick={() => setSelected(note)} className={`block w-full border-b border-gray-100 p-5 text-left hover:bg-[#faf7f2] ${selected?.id === note.id ? 'bg-[#f7efe8]' : ''}`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="font-bold">{note.treba} · {note.type === 'zdravie' ? 'о здравии' : 'об упокоении'}</div>
+                    <div className="mt-1 text-sm text-gray-600">{note.names.length} имён · {note.amount} {note.currency}</div>
+                    <div className="mt-1 text-xs text-gray-400">{note.id}</div>
+                  </div>
+                  <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-bold">{statusLabels[note.status]}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <aside className="rounded-2xl bg-white p-5 shadow-sm lg:sticky lg:top-5 lg:self-start">
+            {!selected ? <p className="text-gray-500">Выберите записку слева</p> : (
+              <div>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-bold">{selected.treba}</h2>
+                    <p className="text-sm text-gray-500">{selected.id}</p>
+                  </div>
+                  <span className="rounded-full bg-[#f1ece3] px-3 py-1 text-xs font-bold text-[#8b3034]">{statusLabels[selected.status]}</span>
+                </div>
+                <dl className="mt-5 space-y-3 text-sm">
+                  <div><dt className="text-gray-500">Отправитель</dt><dd className="font-bold">{selected.senderName}</dd></div>
+                  <div><dt className="text-gray-500">Сумма</dt><dd className="font-bold">{selected.amount} {selected.currency}</dd></div>
+                  <div><dt className="text-gray-500">Имена</dt><dd className="mt-2 rounded-xl bg-[#f7f4ef] p-4 leading-7">{selected.names.map((name, index) => <div key={index}>{index + 1}. {name}</div>)}</dd></div>
+                </dl>
+                <button onClick={() => void printNote(selected)} className="mt-5 w-full rounded-xl bg-gray-900 py-3 font-bold text-white"><Printer className="mr-2 inline h-5 w-5" />Распечатать</button>
+                {selected.status === 'paid' && <button onClick={() => void updateStatus(selected, 'completed')} className="mt-3 w-full rounded-xl bg-[#8b3034] py-3 font-bold text-white">Отметить обработанной</button>}
+                {selected.status === 'printing' && <button onClick={() => void updateStatus(selected, 'completed')} className="mt-3 w-full rounded-xl bg-[#8b3034] py-3 font-bold text-white">Завершить</button>}
+              </div>
+            )}
+          </aside>
+        </section>
+      </div>
+    </main>
+  );
+}
+
+export default function App() {
+  const initialPath = window.location.pathname;
+  const [route, setRoute] = useState(initialPath.startsWith('/admin') ? 'admin-login' : 'public');
+  const [adminToken, setAdminToken] = useState(() => sessionStorage.getItem('hram-admin-token') ?? '');
+
+  useEffect(() => {
+    if (initialPath.startsWith('/admin') && adminToken) setRoute('admin');
+  }, []);
+
+  if (route === 'admin-login') {
+    return <Login onCancel={() => setRoute('public')} onLogin={token => { sessionStorage.setItem('hram-admin-token', token); setAdminToken(token); setRoute('admin'); }} />;
+  }
+  if (route === 'admin') {
+    return <AdminPanel token={adminToken} onPublic={() => setRoute('public')} onLogout={() => { sessionStorage.removeItem('hram-admin-token'); setAdminToken(''); setRoute('admin-login'); }} />;
+  }
+  return <PublicForm onOpenAdmin={() => setRoute(adminToken ? 'admin' : 'admin-login')} />;
 }

@@ -1,0 +1,76 @@
+{
+  "key": "church_note_fulfillment",
+  "version": "1.0.0",
+  "name": "Подача и обработка церковной записки",
+  "objective": "Принять записку, рассчитать сумму, подтвердить платеж из авторитетного webhook, уведомить ответственного, распечатать и зафиксировать обработку без дублей.",
+  "owner": "church-operations",
+  "roles": {
+    "visitor": "Создает записку и инициирует оплату.",
+    "payment_provider": "Подтверждает финансовый результат подписанным webhook.",
+    "administrator": "Просматривает, печатает и обрабатывает записки.",
+    "finance_approver": "Подтверждает возвраты и сверяет платежи.",
+    "system": "Дедуплицирует события, сохраняет audit и notification outbox."
+  },
+  "triggers": [
+    {"type": "command", "name": "note.create"},
+    {"type": "event", "name": "payment.succeeded"},
+    {"type": "command", "name": "note.print"},
+    {"type": "command", "name": "note.complete"},
+    {"type": "event", "name": "refund.succeeded"}
+  ],
+  "inputs": {
+    "type": "object",
+    "required": ["treba", "note_type", "names", "sender_name", "idempotency_key"],
+    "properties": {
+      "treba": {"type": "string"},
+      "note_type": {"enum": ["zdravie", "upokoenie"]},
+      "names": {"type": "array", "minItems": 1, "maxItems": 120},
+      "sender_name": {"type": "string"},
+      "idempotency_key": {"type": "string"}
+    }
+  },
+  "outputs": {
+    "type": "object",
+    "required": ["note_id", "status", "amount", "currency"],
+    "properties": {
+      "note_id": {"type": "string"},
+      "status": {"type": "string"},
+      "amount": {"type": "integer"},
+      "currency": {"const": "BYN"}
+    }
+  },
+  "data_classification": "confidential-personal-financial",
+  "states": ["pending_payment", "paid", "printing", "completed", "cancelled"],
+  "initial_state": "pending_payment",
+  "terminal_states": ["completed", "cancelled"],
+  "steps": [
+    {"id": "validate_and_price", "type": "validation", "risk": "R1", "mutating": false, "verification": "Server recalculates amount from approved tariff table."},
+    {"id": "persist_note", "type": "database", "risk": "R2", "mutating": true, "idempotency_key_expr": "inputs.idempotency_key", "postconditions": ["exactly one immutable creation payload is stored"], "verification": "Read note by idempotency key."},
+    {"id": "confirm_payment", "type": "webhook", "risk": "R3", "mutating": true, "idempotency_key_expr": "provider_event_id", "postconditions": ["amount and currency match", "payment ID is unique", "one notification outbox row exists"], "verification": "Read provider event ledger, note status and outbox.", "remediation": "Stop processing and reconcile by event/payment ID."},
+    {"id": "notify_telegram", "type": "service", "risk": "R3", "mutating": true, "idempotency_key_expr": "note_id + ':payment-notification'", "postconditions": ["delivery receipt or retryable outbox failure exists"], "verification": "Read Telegram receipt/outbox status.", "remediation": "Retry from outbox without recreating payment transition."},
+    {"id": "print_note", "type": "service", "risk": "R2", "mutating": true, "idempotency_key_expr": "note_id + ':print:' + print_job_id", "postconditions": ["print audit event exists"], "verification": "Read print audit event."},
+    {"id": "complete_note", "type": "database", "risk": "R2", "mutating": true, "idempotency_key_expr": "note_id + ':complete:' + expected_version", "postconditions": ["status is completed", "audit event exists"], "verification": "Read note and audit log."},
+    {"id": "record_refund_external", "type": "manual", "risk": "R3", "mutating": false, "postconditions": ["provider refund receipt is retained outside this MVP"], "verification": "Refunds are explicitly unsupported by the MVP API.", "remediation": "Use a separately approved provider-specific refund process."}
+  ],
+  "transitions": [
+    {"from": "pending_payment", "to": "paid", "risk": "R3", "requires_approval": false, "requires_evidence": true, "evidence_contract": ["valid webhook signature", "provider event ID", "matching amount/currency", "database read-back"]},
+    {"from": "pending_payment", "to": "cancelled", "risk": "R2", "requires_approval": false, "requires_evidence": true, "evidence_contract": ["authenticated administrator action", "current note version"]},
+    {"from": "paid", "to": "printing", "risk": "R2", "requires_approval": false, "requires_evidence": true, "evidence_contract": ["authenticated administrator action", "paid note read-back", "current note version"]},
+    {"from": "paid", "to": "completed", "risk": "R2", "requires_approval": false, "requires_evidence": true, "evidence_contract": ["authenticated administrator action", "current note version", "processing confirmation"]},
+    {"from": "printing", "to": "completed", "risk": "R2", "requires_approval": false, "requires_evidence": true, "evidence_contract": ["authenticated administrator action", "print audit event", "current note version"]}
+  ],
+  "invariants": [
+    {"id": "server_price_authoritative", "expression": "stored amount equals deterministic server tariff calculation", "severity": "critical"},
+    {"id": "creation_exactly_once", "expression": "one idempotency key maps to one immutable payload and at most one note", "severity": "critical"},
+    {"id": "payment_exactly_once", "expression": "one provider event ID and payment ID affect state at most once", "severity": "critical"},
+    {"id": "payment_evidence_required", "expression": "paid implies valid signature and matching note, amount and currency", "severity": "critical"},
+    {"id": "no_card_data", "expression": "PAN, expiry and CVC are never accepted or stored", "severity": "critical"},
+    {"id": "notification_deduplicated", "expression": "one successful payment produces at most one Telegram outbox event", "severity": "high"},
+    {"id": "telegram_minimizes_pii", "expression": "Telegram notification contains no commemorated names by default", "severity": "high"},
+    {"id": "status_audited", "expression": "every status mutation appends an audit event", "severity": "critical"},
+    {"id": "optimistic_concurrency", "expression": "admin transition succeeds only for matching expected version", "severity": "critical"}
+  ],
+  "sla": {"payment_confirmation_within": "PT5M", "telegram_notification_within": "PT2M", "escalate_unprocessed_paid_after": "PT24H"},
+  "kpis": ["paid-to-completed cycle time", "duplicate payment effects", "failed Telegram deliveries", "unprocessed paid notes"],
+  "test_scenarios": ["happy path", "duplicate creation", "idempotency payload mismatch", "forged webhook", "amount mismatch", "duplicate webhook", "lost webhook response", "Telegram failure", "unauthorized admin", "optimistic version conflict", "ambiguous refund outcome", "backup restore and provider reconciliation"]
+}

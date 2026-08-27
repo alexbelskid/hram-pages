@@ -1,0 +1,6 @@
+[Unit]
+Description=Backup Hram Notes database
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/backup-hram-notes

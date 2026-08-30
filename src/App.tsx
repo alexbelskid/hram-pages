@@ -93,23 +93,6 @@ const SiteInformation = () => (
       Сайт проходит подготовку к подключению онлайн-платежей. Сейчас банковские карты и платёжные данные на этой странице не принимаются.
     </p>
 
-    <nav className="mt-7 grid grid-cols-2 gap-3" aria-label="Разделы с информацией">
-      {[
-        ['services', 'Услуги'],
-        ['payment', 'Оплата'],
-        ['refund', 'Возврат'],
-        ['details', 'Реквизиты'],
-      ].map(([id, label]) => (
-        <a
-          key={id}
-          href={`#${id}`}
-          className="flex min-h-[48px] items-center justify-center rounded-xl border border-[#cdbdb0] bg-[#fcfaf5] px-3 py-3 text-center text-[16px] font-bold text-[#8b3034]"
-        >
-          {label}
-        </a>
-      ))}
-    </nav>
-
     <div className="mt-8 space-y-5">
       <article id="services" className="scroll-mt-4 rounded-2xl bg-[#fcfaf5] p-5 shadow-sm">
         <div className="flex items-center gap-3 text-[#8b3034]">

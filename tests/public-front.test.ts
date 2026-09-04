@@ -15,10 +15,12 @@ describe('public church front integration', () => {
     expect(appSource).toContain('Отмена и возврат');
     expect(appSource).toContain('Контакты и реквизиты');
     expect(appSource).not.toContain('Вход для администратора');
+    expect(appSource).not.toContain('Банковские данные на этой странице не запрашиваются.');
+    expect(appSource).toContain('Обращаем ваше внимание');
   });
 
   it('does not pretend that legal data, payment or submission is already operational', () => {
-    expect(appSource).toContain('Оплата ещё не подключена');
+    expect(appSource).toContain('оплата пока не подключена');
     expect(appSource).toContain('не считается оплаченной');
     expect(appSource).not.toContain('Visa');
     expect(appSource).not.toContain('Mastercard');

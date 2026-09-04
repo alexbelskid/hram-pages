@@ -331,13 +331,6 @@ function PublicForm({ onOpenAdmin }: { onOpenAdmin: () => void }) {
           </button>
         </section>
 
-        <section className="bg-[#fcfaf5] px-6 py-9 text-[15px] leading-relaxed text-gray-700">
-          <div className="flex items-start gap-3 rounded-2xl bg-[#f4efe7] p-4">
-            <ShieldCheck className="mt-1 h-6 w-6 shrink-0 text-[#8b3034]" />
-            <p><strong>Оплата ещё не подключена.</strong> Сейчас можно проверить форму и подготовить записку. Банковские данные на этой странице не запрашиваются.</p>
-          </div>
-        </section>
-
         <IntroText />
         <SiteInformation />
       </div>

@@ -14,6 +14,7 @@ describe('public church front integration', () => {
     expect(appSource).toContain('Оплата и безопасность');
     expect(appSource).toContain('Отмена и возврат');
     expect(appSource).toContain('Контакты и реквизиты');
+    expect(appSource).not.toContain('Вход для администратора');
   });
 
   it('does not pretend that legal data, payment or submission is already operational', () => {

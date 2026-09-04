@@ -329,7 +329,6 @@ function PublicForm({ onOpenAdmin }: { onOpenAdmin: () => void }) {
           <button onClick={submit} disabled={!selected || !filledNames.length || !senderName.trim() || submitting} className="w-full rounded-2xl bg-[#fcfaf5] py-5 text-[21px] font-bold uppercase text-[#8b3034] disabled:cursor-not-allowed disabled:opacity-50">
             {submitting ? 'Создаём…' : 'Продолжить'}
           </button>
-          <button onClick={onOpenAdmin} className="w-full py-2 text-center text-[15px] font-bold text-white underline">Вход для администратора</button>
         </section>
 
         <section className="bg-[#fcfaf5] px-6 py-9 text-[15px] leading-relaxed text-gray-700">

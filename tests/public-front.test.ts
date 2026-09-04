@@ -5,14 +5,15 @@ import { describe, expect, it } from 'vitest';
 const appSource = readFileSync(resolve('src/App.tsx'), 'utf8');
 
 describe('public church front integration', () => {
-  it('keeps the approved public form without the removed payment-information section', () => {
+  it('keeps the information cards but removes the preparation message and navigation panel', () => {
     expect(appSource).toContain('Подать записку');
-    expect(appSource).not.toContain('Информация об услугах и оплате');
+    expect(appSource).toContain('Информация об услугах и оплате');
     expect(appSource).not.toContain('Сайт проходит подготовку к подключению онлайн-платежей');
-    expect(appSource).not.toContain('Оказываемые услуги');
-    expect(appSource).not.toContain('Оплата и безопасность');
-    expect(appSource).not.toContain('Отмена и возврат');
-    expect(appSource).not.toContain('Контакты и реквизиты');
+    expect(appSource).not.toContain('Разделы с информацией');
+    expect(appSource).toContain('Оказываемые услуги');
+    expect(appSource).toContain('Оплата и безопасность');
+    expect(appSource).toContain('Отмена и возврат');
+    expect(appSource).toContain('Контакты и реквизиты');
   });
 
   it('does not pretend that legal data, payment or submission is already operational', () => {

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
+  Building2,
   CheckCircle2,
   ChevronDown,
   Circle,
@@ -8,6 +9,7 @@ import {
   LogOut,
   Printer,
   RefreshCw,
+  RotateCcw,
   Search,
   ShieldCheck,
   WalletCards,
@@ -80,6 +82,67 @@ const IntroText = () => (
       </a>
     </p>
   </div>
+);
+
+const SiteInformation = () => (
+  <section className="bg-[#f4efe7] px-6 py-10 text-gray-800" aria-labelledby="site-information-title">
+    <h2 id="site-information-title" className="text-center text-[25px] font-bold uppercase tracking-wide text-[#8b3034]">
+      Информация об услугах и оплате
+    </h2>
+
+    <div className="mt-8 space-y-5">
+      <article id="services" className="scroll-mt-4 rounded-2xl bg-[#fcfaf5] p-5 shadow-sm">
+        <div className="flex items-center gap-3 text-[#8b3034]">
+          <FileText className="h-6 w-6 shrink-0" />
+          <h3 className="text-[20px] font-bold">Оказываемые услуги</h3>
+        </div>
+        <p className="mt-3 text-[16px] leading-[1.65]">
+          На сайте можно подготовить церковную записку о здравии или об упокоении и выбрать требу: Проскомидию, Обедню, Молебен, Панихиду, Акафист или Сорокоуст. Итоговая сумма пожертвования показывается до подтверждения формы и зависит от выбранной требы и количества имён.
+        </p>
+      </article>
+
+      <article id="payment" className="scroll-mt-4 rounded-2xl bg-[#fcfaf5] p-5 shadow-sm">
+        <div className="flex items-center gap-3 text-[#8b3034]">
+          <ShieldCheck className="h-6 w-6 shrink-0" />
+          <h3 className="text-[20px] font-bold">Оплата и безопасность</h3>
+        </div>
+        <p className="mt-3 text-[16px] leading-[1.65]">
+          Онлайн-оплата пока не подключена. Сайт не запрашивает номер карты, срок её действия или CVC/CVV-код. После заключения договора с платёжным провайдером здесь будут опубликованы поддерживаемые способы оплаты, правила проведения платежа и официальные логотипы платёжных систем.
+        </p>
+      </article>
+
+      <article id="refund" className="scroll-mt-4 rounded-2xl bg-[#fcfaf5] p-5 shadow-sm">
+        <div className="flex items-center gap-3 text-[#8b3034]">
+          <RotateCcw className="h-6 w-6 shrink-0" />
+          <h3 className="text-[20px] font-bold">Отмена и возврат</h3>
+        </div>
+        <p className="mt-3 text-[16px] leading-[1.65]">
+          До подключения платежей возврат через сайт не производится, поскольку сайт не принимает деньги. Окончательный порядок отмены записки и возврата платежа будет опубликован после его утверждения организацией и согласования с платёжным провайдером.
+        </p>
+      </article>
+
+      <article id="details" className="scroll-mt-4 rounded-2xl bg-[#fcfaf5] p-5 shadow-sm">
+        <div className="flex items-center gap-3 text-[#8b3034]">
+          <Building2 className="h-6 w-6 shrink-0" />
+          <h3 className="text-[20px] font-bold">Контакты и реквизиты</h3>
+        </div>
+        <dl className="mt-3 space-y-3 text-[16px] leading-[1.6]">
+          <div>
+            <dt className="font-bold">Техническая поддержка</dt>
+            <dd>
+              <a href="mailto:Alexbelskid@gmail.com" className="text-[#8b3034] underline">
+                Alexbelskid@gmail.com
+              </a>
+            </dd>
+          </div>
+          <div>
+            <dt className="font-bold">Юридические реквизиты организации</dt>
+            <dd className="text-gray-600">Будут опубликованы после получения и проверки официальных данных.</dd>
+          </div>
+        </dl>
+      </article>
+    </div>
+  </section>
 );
 
 function newIdempotencyKey() {
@@ -277,6 +340,7 @@ function PublicForm({ onOpenAdmin }: { onOpenAdmin: () => void }) {
         </section>
 
         <IntroText />
+        <SiteInformation />
       </div>
     </main>
   );
